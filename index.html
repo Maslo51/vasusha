@@ -111,8 +111,8 @@ function resize() {
 }
 function drawTrail() { ctx.fillStyle = 'rgba(13, 5, 9, 0.22)'; ctx.fillRect(0, 0, W, H); }
 function update() {
-  pulse += 0.03;
-  if (phase === 'forming') { formProgress = Math.min(1, formProgress + 0.006); if (formProgress >= 1) phase = 'formed'; }
+ pulse += 0.015;
+  if (phase === 'forming') { formProgress = Math.min(1, formProgress + 0.002); if (formProgress >= 1) phase = 'formed'; }
   const pulseK = phase === 'formed' ? 1 + Math.sin(pulse) * 0.015 : 1;
   for (const p of particles) {
     if (phase === 'bursting') {
@@ -125,7 +125,7 @@ function update() {
     const ease = local * local * (3 - 2 * local);
     const targetX = cx + (p.tx - cx) * pulseK;
     const targetY = cy + (p.ty - cy) * pulseK;
-    const pull = 0.012 + ease * 0.085;
+    const pull = 0.012 + ease * 0.03;
     p.vx += (targetX - p.x) * pull; p.vy += (targetY - p.y) * pull;
     p.vx *= 0.9; p.vy *= 0.9;
     p.x += p.vx; p.y += p.vy;
