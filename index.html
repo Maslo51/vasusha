@@ -52,7 +52,7 @@
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, DPR = 1.5; 
-let phase = 'forming'; // forming -> holding -> morphing -> heart -> bursting -> done
+let phase = 'forming'; // forming -> holding -> morphing -> heart -> bursting
 let formProgress = 0;
 let pulse = 0;
 let lastTime = performance.now();
@@ -61,7 +61,7 @@ const NAME = "Васюша";
 let particles = [];
 let cx = 0, cy = 0;
 
-// Быстрый спрайт
+// Быстрый спрайт (без тяжелых градиентов)
 const spriteCanvas = document.createElement('canvas');
 spriteCanvas.width = 32; spriteCanvas.height = 32;
 const sCtx = spriteCanvas.getContext('2d');
@@ -91,7 +91,7 @@ function buildTargets() {
   off.width = Math.ceil(nameW + 40); off.height = Math.ceil(nameH + 40);
   octx.font = `bold ${fontSize}px Georgia, serif`; octx.fillStyle = '#fff'; octx.textAlign = 'center'; octx.textBaseline = 'middle'; octx.fillText(NAME, off.width / 2, off.height / 2);
   const img = octx.getImageData(0, 0, off.width, off.height).data;
-  const step = Math.max(2, Math.round(fontSize / 40)); 
+  const step = Math.max(2, Math.round(fontSize / 45)); 
   const targets = [];
   for (let y = 0; y < off.height; y += step) {
     for (let x = 0; x < off.width; x += step) {
@@ -100,22 +100,20 @@ function buildTargets() {
     }
   }
   
-  // Перемешаем для красоты
   for (let i = targets.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [targets[i], targets[j]] = [targets[j], targets[i]]; }
   
-  // Генерируем столько же точек для сердечка
+  // Генерируем точки для сердечка (больше и объемнее)
   const numParticles = targets.length;
-  const scale = Math.min(W, H) * 0.019; 
+  const scale = Math.min(W, H) * 0.022; 
   const heartTargets = [];
   for (let i = 0; i < numParticles; i++) {
     const t = Math.random() * Math.PI * 2;
     const hx = 16 * Math.pow(Math.sin(t), 3);
     const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-    // Делаем сердечко объемным
-    const thickness = (Math.random() + Math.random() + Math.random() - 1.5) * 12; 
+    const thickness = (Math.random() + Math.random() + Math.random() - 1.5) * 15; 
     heartTargets.push({
         x: centerX + hx * scale + thickness,
-        y: centerY - hy * scale + thickness // В canvas Y идет вниз
+        y: centerY - hy * scale + thickness 
     });
   }
 
@@ -135,7 +133,7 @@ function initParticles() {
         tx: targets.nameTargets[i].x, ty: targets.nameTargets[i].y, 
         htx: targets.heartTargets[i].x, hty: targets.heartTargets[i].y,
         size: 1.2 + Math.random() * 1.2, 
-        delay: Math.random() * 0.45 
+        delay: Math.random() * 0.2 
     });
   }
 }
@@ -151,32 +149,35 @@ function resize() {
 function drawTrail() { ctx.fillStyle = 'rgba(13, 5, 9, 0.3)'; ctx.fillRect(0, 0, W, H); }
 
 function update(dt) {
-  pulse += 0.015 * dt;
+  pulse += 0.02 * dt;
   
+  // Фаза 1: Имя собирается (1.5 секунды)
   if (phase === 'forming') { 
-    formProgress = Math.min(1, formProgress + 0.003 * dt); 
+    formProgress = Math.min(1, formProgress + 0.015 * dt); 
     if (formProgress >= 1) { phase = 'holding'; holdTimer = performance.now(); } 
   } 
+  // Фаза 2: Имя замирает (1.2 секунды)
   else if (phase === 'holding') {
-    if (performance.now() - holdTimer > 2500) { // Ждем 2.5 секунды
+    if (performance.now() - holdTimer > 1200) { 
         phase = 'morphing'; 
         formProgress = 0;
-        ctx.clearRect(0, 0, W, H); // Очищаем шлейф при взрыве
+        ctx.clearRect(0, 0, W, H); // Очищаем экран для эффекта взрыва
         for (let p of particles) { 
-            p.vx += (Math.random() - 0.5) * 40; // Взрыв
-            p.vy += (Math.random() - 0.5) * 40; 
+            p.vx += (Math.random() - 0.5) * 80; // Сильный взрыв
+            p.vy += (Math.random() - 0.5) * 80; 
         }
     }
   }
+  // Фаза 3: Перестройка в сердечко (1.5 секунды)
   else if (phase === 'morphing') {
-    formProgress = Math.min(1, formProgress + 0.002 * dt); 
+    formProgress = Math.min(1, formProgress + 0.012 * dt); 
     if (formProgress >= 1) { 
         phase = 'heart'; 
         document.getElementById('hint').innerText = "нажми на сердечко 💌"; 
     }
   }
 
-  const pulseK = phase === 'heart' ? 1 + Math.sin(pulse) * 0.03 : 1;
+  const pulseK = phase === 'heart' ? 1 + Math.sin(pulse) * 0.035 : 1;
 
   for (const p of particles) {
     if (phase === 'bursting') {
@@ -189,23 +190,21 @@ function update(dt) {
     const local = Math.max(0, Math.min(1, (formProgress - p.delay) / (1 - p.delay)));
     const ease = local * local * (3 - 2 * local);
     
-    // Выбираем цель: имя или сердечко
     const isHeart = (phase === 'morphing' || phase === 'heart');
     let targetX = isHeart ? p.htx : p.tx;
     let targetY = isHeart ? p.hty : p.ty;
     
-    // Применяем пульсацию только к сердечку
     if (isHeart) {
         targetX = cx + (targetX - cx) * pulseK;
         targetY = cy + (targetY - cy) * pulseK;
     }
 
-    // Магия притяжения
-    const pull = (phase === 'morphing' && formProgress < 0.1) ? 0.005 : (0.004 + ease * 0.012);
+    // Сильное притяжение в начале морфинга, чтобы успеть собраться
+    const pull = (phase === 'morphing' && formProgress < 0.2) ? 0.02 : (0.005 + ease * 0.015);
     
     p.vx += (targetX - p.x) * pull * dt; 
     p.vy += (targetY - p.y) * pull * dt;
-    p.vx *= Math.pow(0.92, dt); p.vy *= Math.pow(0.92, dt);
+    p.vx *= Math.pow(0.90, dt); p.vy *= Math.pow(0.90, dt);
     p.x += p.vx * dt; p.y += p.vy * dt;
   }
 }
@@ -220,13 +219,9 @@ function render() {
   ctx.globalAlpha = 1.0;
 }
 
-let lastRenderTime = 0;
 function loop(now) {
   requestAnimationFrame(loop);
-  if (now - lastRenderTime < 16) return; 
-  lastRenderTime = now;
-  
-  let dt = Math.min(now - lastTime, 50) / 16.66;
+  let dt = Math.min(now - lastTime, 50) / 16.66; // Умная синхронизация времени
   lastTime = now;
   update(dt); render(); 
 }
@@ -245,7 +240,6 @@ canvas.addEventListener('click', (e) => {
 window.addEventListener('resize', resize);
 resize(); requestAnimationFrame(loop);
 
-// Логика кнопки-сердечка внутри карточки
 const smallHeart = document.getElementById('smallHeart');
 const counterEl = document.getElementById('counter');
 const msgEl = document.getElementById('messageBox');
