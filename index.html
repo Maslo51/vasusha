@@ -52,7 +52,7 @@
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let W = 0, H = 0, DPR = 1.5; 
-let phase = 'forming'; // forming -> holding -> morphing -> heart -> bursting
+let phase = 'forming'; 
 let formProgress = 0;
 let pulse = 0;
 let lastTime = performance.now();
@@ -61,7 +61,6 @@ const NAME = "Васюша";
 let particles = [];
 let cx = 0, cy = 0;
 
-// Быстрый спрайт (без тяжелых градиентов)
 const spriteCanvas = document.createElement('canvas');
 spriteCanvas.width = 32; spriteCanvas.height = 32;
 const sCtx = spriteCanvas.getContext('2d');
@@ -102,7 +101,6 @@ function buildTargets() {
   
   for (let i = targets.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [targets[i], targets[j]] = [targets[j], targets[i]]; }
   
-  // Генерируем точки для сердечка (больше и объемнее)
   const numParticles = targets.length;
   const scale = Math.min(W, H) * 0.022; 
   const heartTargets = [];
@@ -116,7 +114,6 @@ function buildTargets() {
         y: centerY - hy * scale + thickness 
     });
   }
-
   return { nameTargets: targets, heartTargets: heartTargets };
 }
 
@@ -149,28 +146,28 @@ function resize() {
 function drawTrail() { ctx.fillStyle = 'rgba(13, 5, 9, 0.3)'; ctx.fillRect(0, 0, W, H); }
 
 function update(dt) {
-  pulse += 0.02 * dt;
+  pulse += 0.01 * dt; // Замедлили пульсацию сердечка
   
-  // Фаза 1: Имя собирается (1.5 секунды)
+  // Фаза 1: Имя собирается (теперь в 3 раза медленнее)
   if (phase === 'forming') { 
-    formProgress = Math.min(1, formProgress + 0.015 * dt); 
+    formProgress = Math.min(1, formProgress + 0.005 * dt); 
     if (formProgress >= 1) { phase = 'holding'; holdTimer = performance.now(); } 
   } 
-  // Фаза 2: Имя замирает (1.2 секунды)
+  // Фаза 2: Имя замирает (ждем 2.5 секунды, чтобы прочитала)
   else if (phase === 'holding') {
-    if (performance.now() - holdTimer > 1200) { 
+    if (performance.now() - holdTimer > 2500) { 
         phase = 'morphing'; 
         formProgress = 0;
-        ctx.clearRect(0, 0, W, H); // Очищаем экран для эффекта взрыва
+        ctx.clearRect(0, 0, W, H); 
         for (let p of particles) { 
-            p.vx += (Math.random() - 0.5) * 80; // Сильный взрыв
-            p.vy += (Math.random() - 0.5) * 80; 
+            p.vx += (Math.random() - 0.5) * 30; // Ослабили взрыв
+            p.vy += (Math.random() - 0.5) * 30; 
         }
     }
   }
-  // Фаза 3: Перестройка в сердечко (1.5 секунды)
+  // Фаза 3: Перестройка в сердечко (тоже медленно и плавно)
   else if (phase === 'morphing') {
-    formProgress = Math.min(1, formProgress + 0.012 * dt); 
+    formProgress = Math.min(1, formProgress + 0.004 * dt); 
     if (formProgress >= 1) { 
         phase = 'heart'; 
         document.getElementById('hint').innerText = "нажми на сердечко 💌"; 
@@ -199,12 +196,12 @@ function update(dt) {
         targetY = cy + (targetY - cy) * pulseK;
     }
 
-    // Сильное притяжение в начале морфинга, чтобы успеть собраться
-    const pull = (phase === 'morphing' && formProgress < 0.2) ? 0.02 : (0.005 + ease * 0.015);
+    // Сделали притяжение более мягким и медленным
+    const pull = (phase === 'morphing' && formProgress < 0.2) ? 0.006 : (0.002 + ease * 0.006);
     
     p.vx += (targetX - p.x) * pull * dt; 
     p.vy += (targetY - p.y) * pull * dt;
-    p.vx *= Math.pow(0.90, dt); p.vy *= Math.pow(0.90, dt);
+    p.vx *= Math.pow(0.93, dt); p.vy *= Math.pow(0.93, dt); // Больше трения - плавнее полет
     p.x += p.vx * dt; p.y += p.vy * dt;
   }
 }
@@ -221,7 +218,7 @@ function render() {
 
 function loop(now) {
   requestAnimationFrame(loop);
-  let dt = Math.min(now - lastTime, 50) / 16.66; // Умная синхронизация времени
+  let dt = Math.min(now - lastTime, 50) / 16.66; 
   lastTime = now;
   update(dt); render(); 
 }
