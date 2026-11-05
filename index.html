@@ -51,7 +51,7 @@
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-let W = 0, H = 0, DPR = 1.5; // Снизили разрешение для скорости
+let W = 0, H = 0, DPR = 1.5; 
 let phase = 'forming';
 let formProgress = 0;
 let pulse = 0;
@@ -61,7 +61,7 @@ let particles = [];
 let cx = 0, cy = 0;
 let nameBounds = { w: 0, h: 0 };
 
-// Заранее рисуем точку (без тяжелых градиентов в реальном времени)
+// Быстрый спрайт (без тяжелых градиентов)
 const spriteCanvas = document.createElement('canvas');
 spriteCanvas.width = 32; spriteCanvas.height = 32;
 const sCtx = spriteCanvas.getContext('2d');
@@ -91,8 +91,8 @@ function buildTargets() {
   octx.font = `bold ${fontSize}px Georgia, serif`; octx.fillStyle = '#fff'; octx.textAlign = 'center'; octx.textBaseline = 'middle'; octx.fillText(NAME, off.width / 2, off.height / 2);
   const img = octx.getImageData(0, 0, off.width, off.height).data;
   
-  // УВЕЛИЧИЛИ ШАГ (меньше частиц - выше скорость)
-  const step = Math.max(4, Math.round(fontSize / 30)); 
+  // Сделали шаг меньше (больше частиц), чтобы имя было ЧЕТКИМ
+  const step = Math.max(2, Math.round(fontSize / 45)); 
   const targets = [];
   for (let y = 0; y < off.height; y += step) {
     for (let x = 0; x < off.width; x += step) {
@@ -100,7 +100,7 @@ function buildTargets() {
       if (a > 128) { targets.push({ x: centerX + (x - off.width / 2), y: centerY + (y - off.height / 2), sizeMul: 1.0, bright: 1.0 }); }
     }
   }
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     const ang = Math.random() * Math.PI * 2;
     const r = nameW * (0.55 + Math.random() * 0.7);
     targets.push({ x: centerX + Math.cos(ang) * r, y: centerY + Math.sin(ang) * r * 0.8, sizeMul: 0.5, bright: 0.35 });
@@ -115,7 +115,7 @@ function initParticles() {
   targets.forEach((t) => {
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.max(W, H) * (0.7 + Math.random() * 0.6);
-    particles.push({ x: W / 2 + Math.cos(angle) * dist, y: H / 2 + Math.sin(angle) * dist, vx: 0, vy: 0, tx: t.x, ty: t.y, size: (1.2 + Math.random() * 1.5) * t.sizeMul, bright: t.bright, delay: Math.random() * 0.45 });
+    particles.push({ x: W / 2 + Math.cos(angle) * dist, y: H / 2 + Math.sin(angle) * dist, vx: 0, vy: 0, tx: t.x, ty: t.y, size: (1.0 + Math.random() * 1.2) * t.sizeMul, bright: t.bright, delay: Math.random() * 0.45 });
   });
 }
 
@@ -156,10 +156,9 @@ function update(dt) {
 
 function render() {
   drawTrail(); 
-  // Убрали 'lighter', теперь просто рисуем картинки
   for (const p of particles) {
-    const r = p.size * 3; 
-    ctx.globalAlpha = 0.8 * p.bright;
+    const r = p.size * 2.5; // Размер точки
+    ctx.globalAlpha = 0.9 * p.bright;
     ctx.drawImage(spriteCanvas, p.x - r, p.y - r, r * 2, r * 2);
   }
   ctx.globalAlpha = 1.0;
@@ -168,7 +167,7 @@ function render() {
 let lastRenderTime = 0;
 function loop(now) {
   requestAnimationFrame(loop);
-  if (now - lastRenderTime < 16) return; // Жесткий лок на 60 FPS
+  if (now - lastRenderTime < 16) return; // Ограничение 60 FPS
   lastRenderTime = now;
   
   let dt = Math.min(now - lastTime, 50) / 16.66;
