@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Васюше 💌</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: radial-gradient(circle at 50% 45%, #2a1420 0%, #1a0c14 45%, #0d0509 100%); font-family: 'Georgia', serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+  .hint { position: fixed; bottom: 8%; left: 0; right: 0; text-align: center; font-size: 15px; letter-spacing: 2px; color: #ff9ec7; text-shadow: 0 0 14px rgba(255,120,180,0.7); z-index: 5; animation: hintBlink 2.4s ease-in-out infinite; transition: opacity 0.6s; pointer-events: none; }
+  @keyframes hintBlink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  .hint.gone { opacity: 0; }
+  .card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: min(520px, 90vw); max-height: 88vh; overflow-y: auto; background: rgba(30, 14, 24, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,150,200,0.35); border-radius: 30px; padding: 40px 34px 32px; text-align: center; color: #f5d7e4; box-shadow: 0 24px 80px rgba(255,80,160,0.35), 0 0 0 1px rgba(255,255,255,0.04) inset; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2,0.9,0.3,1.2); }
+  .card.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .card::-webkit-scrollbar { width: 6px; }
+  .card::-webkit-scrollbar-thumb { background: rgba(255,150,200,0.35); border-radius: 3px; }
+  .small-heart { font-size: 46px; display: inline-block; cursor: pointer; user-select: none; animation: beat 1.6s ease-in-out infinite; transition: transform 0.15s; filter: drop-shadow(0 0 18px rgba(255,110,180,0.8)); }
+  .small-heart:active { transform: scale(0.85); }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.15); } 45% { transform: scale(0.97); } 65% { transform: scale(1.1); } }
+  h1 { font-size: 28px; color: #ffa9cf; margin: 8px 0 4px; font-weight: normal; letter-spacing: 1px; text-shadow: 0 0 22px rgba(255,120,180,0.55); }
+  .subtitle { font-size: 14px; color: #d99ab8; font-style: italic; margin-bottom: 22px; }
+  p { font-size: 16px; line-height: 1.85; color: #ecc9d9; margin-bottom: 12px; }
+  .accent { color: #ff9ec7; }
+  .divider { width: 90px; height: 1px; background: linear-gradient(90deg, transparent, #ff8fc0, transparent); margin: 20px auto; }
+  .counter { margin-top: 16px; font-size: 13px; color: #d08ba8; min-height: 18px; }
+  .message-box { margin-top: 10px; min-height: 42px; font-size: 15px; color: #ffa9cf; font-style: italic; opacity: 0; transition: opacity 0.5s ease; text-shadow: 0 0 12px rgba(255,120,180,0.4); }
+  .message-box.show { opacity: 1; }
+  .signature { margin-top: 20px; font-style: italic; color: #c98aa6; font-size: 14px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hint" id="hint">нажми на имя 💌</div>
+<div class="card" id="card">
+  <span class="small-heart" id="smallHeart">💗</span>
+  <h1>Васюша</h1>
+  <p class="subtitle">самой любимой девочке 🌷</p>
+  <p>Я тут сидел и думал,<br>что давно не говорил тебе одной важной вещи.<br><span class="accent">Ты — лучшее, что со мной случилось.</span></p>
+  <p>Серьёзно. Не потому что положено так говорить,<br>а потому что это правда.<br>С тобой как-то по-настоящему тепло и спокойно.</p>
+  <div class="divider"></div>
+  <p>Я, наверное, не всегда это показываю.<br>Могу молчать, могу быть занят, могу ворчать.<br>Но знай — <span class="accent">я очень тебя люблю.</span></p>
+  <p>Люблю твой смех. Люблю, как ты злишься по мелочам<br>и как потом сама же улыбаешься.<br>Люблю, когда ты рядом — даже если молчим.</p>
+  <div class="divider"></div>
+  <p>Пусть у тебя всё будет хорошо.<br>А если будет плохо — я рядом, ты же знаешь 🤍</p>
+  <p>И да, ты самое красивое, что было в моей жизни.<br>Всё, можешь теперь краснеть 😌</p>
+  <p class="signature">— твой, целиком и полностью</p>
+  <div class="counter" id="counter"></div>
+  <div class="message-box" id="messageBox"></div>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+let phase = 'forming';
+let formProgress = 0;
+let pulse = 0;
+const NAME = "Васюша";
+let particles = [];
+let cx = 0, cy = 0;
+let nameBounds = { w: 0, h: 0 };
+function buildTargets() {
+  const off = document.createElement('canvas');
+  const octx = off.getContext('2d');
+  const centerX = W / 2;
+  const centerY = H / 2 - H * 0.02;
+  let fontSize = Math.min(W * 0.20, H * 0.30, 240);
+  octx.font = `bold ${fontSize}px Georgia, serif`;
+  let m = octx.measureText(NAME);
+  let nameW = m.width;
+  let nameH = fontSize * 1.15;
+  const maxW = W * 0.88;
+  const maxH = H * 0.65;
+  if (nameW > maxW) { const k = maxW / nameW; fontSize *= k; octx.font = `bold ${fontSize}px Georgia, serif`; m = octx.measureText(NAME); nameW = m.width; nameH = fontSize * 1.15; }
+  if (nameH > maxH) { const k = maxH / nameH; fontSize *= k; octx.font = `bold ${fontSize}px Georgia, serif`; m = octx.measureText(NAME); nameW = m.width; nameH = fontSize * 1.15; }
+  cx = centerX; cy = centerY; nameBounds = { w: nameW, h: nameH };
+  off.width = Math.ceil(nameW + 40); off.height = Math.ceil(nameH + 40);
+  octx.font = `bold ${fontSize}px Georgia, serif`; octx.fillStyle = '#fff'; octx.textAlign = 'center'; octx.textBaseline = 'middle'; octx.fillText(NAME, off.width / 2, off.height / 2);
+  const img = octx.getImageData(0, 0, off.width, off.height).data;
+  const step = Math.max(2, Math.round(fontSize / 55));
+  const targets = [];
+  for (let y = 0; y < off.height; y += step) {
+    for (let x = 0; x < off.width; x += step) {
+      const a = img[(y * off.width + x) * 4 + 3];
+      if (a > 128) { targets.push({ x: centerX + (x - off.width / 2), y: centerY + (y - off.height / 2), hue: 335 + Math.random() * 20, sizeMul: 1.0, bright: 1.0 }); }
+    }
+  }
+  for (let i = 0; i < 90; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const r = nameW * (0.55 + Math.random() * 0.7);
+    targets.push({ x: centerX + Math.cos(ang) * r, y: centerY + Math.sin(ang) * r * 0.8, hue: 330 + Math.random() * 25, sizeMul: 0.55, bright: 0.35 });
+  }
+  for (let i = targets.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [targets[i], targets[j]] = [targets[j], targets[i]]; }
+  return targets;
+}
+function initParticles() {
+  const targets = buildTargets();
+  particles = [];
+  targets.forEach((t) => {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.max(W, H) * (0.7 + Math.random() * 0.6);
+    particles.push({ x: W / 2 + Math.cos(angle) * dist, y: H / 2 + Math.sin(angle) * dist, vx: 0, vy: 0, tx: t.x, ty: t.y, size: (0.9 + Math.random() * 1.6) * t.sizeMul, hue: t.hue, bright: t.bright, delay: Math.random() * 0.45, twinkle: Math.random() * Math.PI * 2 });
+  });
+}
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  initParticles(); formProgress = 0; phase = 'forming';
+}
+function drawTrail() { ctx.fillStyle = 'rgba(13, 5, 9, 0.22)'; ctx.fillRect(0, 0, W, H); }
+function update() {
+  pulse += 0.03;
+  if (phase === 'forming') { formProgress = Math.min(1, formProgress + 0.006); if (formProgress >= 1) phase = 'formed'; }
+  const pulseK = phase === 'formed' ? 1 + Math.sin(pulse) * 0.015 : 1;
+  for (const p of particles) {
+    if (phase === 'bursting') {
+      const ang = Math.atan2(p.y - cy, p.x - cx);
+      const spd = 6 + Math.random() * 3;
+      p.x += Math.cos(ang) * spd + (Math.random() - 0.5) * 3; p.y += Math.sin(ang) * spd + (Math.random() - 0.5) * 3;
+      continue;
+    }
+    const local = Math.max(0, Math.min(1, (formProgress - p.delay) / (1 - p.delay)));
+    const ease = local * local * (3 - 2 * local);
+    const targetX = cx + (p.tx - cx) * pulseK;
+    const targetY = cy + (p.ty - cy) * pulseK;
+    const pull = 0.012 + ease * 0.085;
+    p.vx += (targetX - p.x) * pull; p.vy += (targetY - p.y) * pull;
+    p.vx *= 0.9; p.vy *= 0.9;
+    p.x += p.vx; p.y += p.vy;
+    p.twinkle += 0.05;
+  }
+}
+function render() {
+  drawTrail(); ctx.globalCompositeOperation = 'lighter';
+  for (const p of particles) {
+    const tw = 0.7 + Math.sin(p.twinkle) * 0.3;
+    const r = p.size * tw;
+    const alpha = (0.5 + Math.sin(p.twinkle) * 0.25) * (0.55 + p.bright * 0.5);
+    const light0 = Math.min(96, 45 + p.bright * 50); const light1 = Math.min(72, 30 + p.bright * 40);
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4.5);
+    grd.addColorStop(0, `hsla(${p.hue}, 100%, ${light0}%, ${alpha})`);
+    grd.addColorStop(0.4, `hsla(${p.hue}, 100%, ${light1}%, ${alpha * 0.35})`);
+    grd.addColorStop(1, `hsla(${p.hue}, 100%, 50%, 0)`);
+    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(p.x, p.y, r * 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = `hsla(${p.hue}, 100%, ${Math.min(98, light0 + 5)}%, ${alpha})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+function loop() { update(); render(); requestAnimationFrame(loop); }
+const hint = document.getElementById('hint');
+const card = document.getElementById('card');
+canvas.addEventListener('click', (e) => {
+  if (phase !== 'formed') return;
+  if (card.classList.contains('show')) return;
+  const dx = Math.abs(e.clientX - cx); const dy = Math.abs(e.clientY - cy);
+  if (dx > nameBounds.w / 2 * 1.2 || dy > nameBounds.h / 2 * 1.2) return;
+  phase = 'bursting'; hint.classList.add('gone'); setTimeout(() => card.classList.add('show'), 550);
+});
+window.addEventListener('resize', resize);
+resize(); loop();
+const smallHeart = document.getElementById('smallHeart');
+const counterEl = document.getElementById('counter');
+const msgEl = document.getElementById('messageBox');
+const messages = ["Люблю тебя. Просто напоминаю 💗", "Ты самая лучшая. И это не обсуждается 💫", "Скучаю. Даже если только что виделись 🤍", "Обнимаю тебя крепко-крепко прямо сейчас 🫂", "Ты моя самая любимая девочка 🌸", "Спасибо, что ты рядом. Правда ✨", "Хочу, чтобы ты улыбалась как можно чаще 💕", "Ты у меня умница. И красавица 💖", "Если грустишь — я тут. Просто позови 🕯️", "Всё будет хорошо. Я рядом 🦋", "Моё самое любимое «просто так» — это ты 💌", "Ладно, хватит тыкать — иди сюда, обниму 😄"];
+let count = 0;
+smallHeart.addEventListener('click', () => {
+  count++;
+  let word = 'сердечек';
+  const n10 = count % 10, n100 = count % 100;
+  if (n10 === 1 && n100 !== 11) word = 'сердечко';
+  else if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) word = 'сердечка';
+  counterEl.textContent = `ты собрала уже ${count} ${word} 💝`;
+  msgEl.textContent = messages[Math.floor(Math.random() * messages.length)];
+  msgEl.classList.add('show');
+});
+</script>
+</body>
+</html>
