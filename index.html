@@ -61,6 +61,17 @@ let particles = [];
 let cx = 0, cy = 0;
 let nameBounds = { w: 0, h: 0 };
 
+// ОПТИМИЗАЦИЯ: Заранее рисуем светящуюся точку на отдельном холсте, чтобы не нагружать видеокарту
+const spriteCanvas = document.createElement('canvas');
+spriteCanvas.width = 64; spriteCanvas.height = 64;
+const sCtx = spriteCanvas.getContext('2d');
+const grd = sCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+grd.addColorStop(0, 'rgba(255, 180, 210, 1)');
+grd.addColorStop(0.4, 'rgba(255, 110, 180, 0.4)');
+grd.addColorStop(1, 'rgba(255, 110, 180, 0)');
+sCtx.fillStyle = grd;
+sCtx.beginPath(); sCtx.arc(32, 32, 32, 0, Math.PI * 2); sCtx.fill();
+
 function buildTargets() {
   const off = document.createElement('canvas');
   const octx = off.getContext('2d');
@@ -84,13 +95,13 @@ function buildTargets() {
   for (let y = 0; y < off.height; y += step) {
     for (let x = 0; x < off.width; x += step) {
       const a = img[(y * off.width + x) * 4 + 3];
-      if (a > 128) { targets.push({ x: centerX + (x - off.width / 2), y: centerY + (y - off.height / 2), hue: 335 + Math.random() * 20, sizeMul: 1.0, bright: 1.0 }); }
+      if (a > 128) { targets.push({ x: centerX + (x - off.width / 2), y: centerY + (y - off.height / 2), sizeMul: 1.0, bright: 1.0 }); }
     }
   }
   for (let i = 0; i < 90; i++) {
     const ang = Math.random() * Math.PI * 2;
     const r = nameW * (0.55 + Math.random() * 0.7);
-    targets.push({ x: centerX + Math.cos(ang) * r, y: centerY + Math.sin(ang) * r * 0.8, hue: 330 + Math.random() * 25, sizeMul: 0.55, bright: 0.35 });
+    targets.push({ x: centerX + Math.cos(ang) * r, y: centerY + Math.sin(ang) * r * 0.8, sizeMul: 0.55, bright: 0.35 });
   }
   for (let i = targets.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [targets[i], targets[j]] = [targets[j], targets[i]]; }
   return targets;
@@ -102,7 +113,7 @@ function initParticles() {
   targets.forEach((t) => {
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.max(W, H) * (0.7 + Math.random() * 0.6);
-    particles.push({ x: W / 2 + Math.cos(angle) * dist, y: H / 2 + Math.sin(angle) * dist, vx: 0, vy: 0, tx: t.x, ty: t.y, size: (0.9 + Math.random() * 1.6) * t.sizeMul, hue: t.hue, bright: t.bright, delay: Math.random() * 0.45, twinkle: Math.random() * Math.PI * 2 });
+    particles.push({ x: W / 2 + Math.cos(angle) * dist, y: H / 2 + Math.sin(angle) * dist, vx: 0, vy: 0, tx: t.x, ty: t.y, size: (1.0 + Math.random() * 1.5) * t.sizeMul, bright: t.bright, delay: Math.random() * 0.45, twinkle: Math.random() * Math.PI * 2 });
   });
 }
 
@@ -144,27 +155,30 @@ function update(dt) {
 
 function render() {
   drawTrail(); ctx.globalCompositeOperation = 'lighter';
+  
   for (const p of particles) {
-    const tw = 0.7 + Math.sin(p.twinkle) * 0.3;
-    const r = p.size * tw;
-    const alpha = (0.5 + Math.sin(p.twinkle) * 0.25) * (0.55 + p.bright * 0.5);
-    const light0 = Math.min(96, 45 + p.bright * 50); const light1 = Math.min(72, 30 + p.bright * 40);
-    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4.5);
-    grd.addColorStop(0, `hsla(${p.hue}, 100%, ${light0}%, ${alpha})`);
-    grd.addColorStop(0.4, `hsla(${p.hue}, 100%, ${light1}%, ${alpha * 0.35})`);
-    grd.addColorStop(1, `hsla(${p.hue}, 100%, 50%, 0)`);
-    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(p.x, p.y, r * 4.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = `hsla(${p.hue}, 100%, ${Math.min(98, light0 + 5)}%, ${alpha})`;
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+    const tw = 0.8 + Math.sin(p.twinkle) * 0.2;
+    const r = p.size * tw * 4; 
+    ctx.globalAlpha = (0.6 + Math.sin(p.twinkle) * 0.2) * (0.55 + p.bright * 0.5);
+    
+    // ОПТИМИЗАЦИЯ: Вместо сложных градиентов просто рисуем картинку нужного размера
+    ctx.drawImage(spriteCanvas, p.x - r, p.y - r, r * 2, r * 2);
   }
+  
   ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1.0;
 }
 
-function loop() {
-  let now = performance.now();
+let lastRenderTime = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  // ОПТИМИЗАЦИЯ: Ограничиваем 60 кадрами в секунду (чтобы 120 Гц экран не перегружался)
+  if (now - lastRenderTime < 15) return; 
+  lastRenderTime = now;
+  
   let dt = Math.min(now - lastTime, 50) / 16.66;
   lastTime = now;
-  update(dt); render(); requestAnimationFrame(loop); 
+  update(dt); render(); 
 }
 
 const hint = document.getElementById('hint');
@@ -177,7 +191,7 @@ canvas.addEventListener('click', (e) => {
   phase = 'bursting'; hint.classList.add('gone'); setTimeout(() => card.classList.add('show'), 550);
 });
 window.addEventListener('resize', resize);
-resize(); loop();
+resize(); requestAnimationFrame(loop);
 
 const smallHeart = document.getElementById('smallHeart');
 const counterEl = document.getElementById('counter');
