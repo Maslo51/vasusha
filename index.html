@@ -10,7 +10,7 @@
     height: 100vh; overflow: hidden; background: #0a0510; 
     font-family: 'Georgia', serif; touch-action: none; 
   }
-  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+  canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: block; z-index: 1; }
   
   .hint { 
     position: fixed; top: 8%; left: 0; right: 0; text-align: center; 
@@ -52,7 +52,9 @@
 </head>
 <body>
 
-<!-- ВОТ ЕГО НЕ ХВАТАЛО! -->
+<!-- Ловушка для ошибок (если что-то сломается, ты увидишь это на экране) -->
+<div id="error-box" style="display:none; position:fixed; top:0; left:0; width:100%; background:red; color:white; z-index:9999; padding:10px; font-size:12px;"></div>
+
 <canvas id="c"></canvas>
 
 <div class="hint" id="hint">Поймай 5 звезд ✨<br><span style="font-size:14px; opacity:0.7">(последняя будет золотой!)</span></div>
@@ -68,234 +70,253 @@
 </div>
 
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
+// Показываем ошибки на экране, если они будут
+window.onerror = function(msg, url, line) {
+    let box = document.getElementById('error-box');
+    box.style.display = 'block';
+    box.innerText = 'ОШИБКА: ' + msg + ' (строка ' + line + ')';
+};
 
-let audioCtx;
-let ambientStarted = false;
+window.addEventListener('load', () => {
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    let W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-function playSound(freq, type = 'sine', duration = 0.5) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.2, audioCtx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
+    let audioCtx;
+    let ambientStarted = false;
 
-function playEpicChord() {
-    [400, 500, 600].forEach(f => playSound(f, 'triangle', 1.5));
-}
-
-const starSprite = document.createElement('canvas');
-starSprite.width = 64; starSprite.height = 64;
-const sCtx = starSprite.getContext('2d');
-const grd = sCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-grd.addColorStop(0, '#fff'); grd.addColorStop(0.3, '#ff9ec7'); grd.addColorStop(1, 'rgba(255, 110, 180, 0)');
-sCtx.fillStyle = grd; sCtx.beginPath(); sCtx.arc(32, 32, 32, 0, Math.PI * 2); sCtx.fill();
-
-const goldSprite = document.createElement('canvas');
-goldSprite.width = 64; goldSprite.height = 64;
-const gCtx = goldSprite.getContext('2d');
-const gGrd = gCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
-gGrd.addColorStop(0, '#fff'); gGrd.addColorStop(0.3, '#ffd700'); gGrd.addColorStop(1, 'rgba(255, 215, 0, 0)');
-gCtx.fillStyle = gGrd; gCtx.beginPath(); gCtx.arc(32, 32, 32, 0, Math.PI * 2); gCtx.fill();
-
-let stars = [], particles = [], bgStars = [];
-let caught = 0, target = 5, gameOver = false;
-let shakeIntensity = 0;
-
-function init() {
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    stars = []; particles = []; caught = 0; gameOver = false; shakeIntensity = 0;
-    document.getElementById('score').innerText = `0 / ${target}`;
-    document.getElementById('score').style.opacity = '1';
-    document.getElementById('hint').style.opacity = '1';
-    document.getElementById('card').classList.remove('show');
-    document.getElementById('secretBtn').style.display = 'none';
-
-    for (let i = 0; i < target; i++) {
-        let isGold = (i === target - 1);
-        stars.push({
-            x: Math.random() * (W - 150) + 75, y: Math.random() * (H - 250) + 125,
-            vx: (Math.random() - 0.5) * (isGold ? 4 : 2), 
-            vy: (Math.random() - 0.5) * (isGold ? 4 : 2),
-            size: isGold ? 35 : 18, active: true, isGold: isGold
-        });
-    }
-
-    bgStars = [];
-    for (let i = 0; i < 80; i++) bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5 });
-}
-
-canvas.addEventListener('pointerdown', (e) => {
-    if (gameOver) return;
-    
-    if (!ambientStarted) {
-        ambientStarted = true;
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.value = 60;
-        gain.gain.value = 0.05;
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start();
-    }
-
-    const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left, clickY = e.clientY - rect.top;
-
-    for (let i = stars.length - 1; i >= 0; i--) {
-        let s = stars[i];
-        if (!s.active) continue;
-        
-        const dist = Math.hypot(clickX - s.x, clickY - s.y);
-        if (dist < s.size + 40) {
-            s.active = false;
-            caught++;
+    function playSound(freq, type = 'sine', duration = 0.5) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             
-            if (s.isGold) { playEpicChord(); shakeIntensity = 25; } 
-            else { playSound(500 + caught * 150); shakeIntensity = 10; }
-
-            for (let p = 0; p < (s.isGold ? 50 : 20); p++) {
-                particles.push({
-                    x: s.x, y: s.y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12,
-                    life: 1.5, color: s.isGold ? '#ffd700' : (Math.random() > 0.5 ? '#ff9ec7' : '#fff')
-                });
-            }
-
-            document.getElementById('score').innerText = `${caught} / ${target}`;
-            if (caught >= target) winGame();
-            break;
-        }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.2, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        } catch(e) { console.log('Audio error', e); }
     }
-});
 
-function winGame() {
-    gameOver = true;
-    setTimeout(() => {
-        document.getElementById('hint').style.opacity = '0';
-        document.getElementById('score').style.opacity = '0';
+    function playEpicChord() {
+        [400, 500, 600].forEach(f => playSound(f, 'triangle', 1.5));
+    }
+
+    // Создаем спрайты звезд
+    const starSprite = document.createElement('canvas');
+    starSprite.width = 64; starSprite.height = 64;
+    const sCtx = starSprite.getContext('2d');
+    const grd = sCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grd.addColorStop(0, '#fff'); grd.addColorStop(0.3, '#ff9ec7'); grd.addColorStop(1, 'rgba(255, 110, 180, 0)');
+    sCtx.fillStyle = grd; sCtx.beginPath(); sCtx.arc(32, 32, 32, 0, Math.PI * 2); sCtx.fill();
+
+    const goldSprite = document.createElement('canvas');
+    goldSprite.width = 64; goldSprite.height = 64;
+    const gCtx = goldSprite.getContext('2d');
+    const gGrd = gCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gGrd.addColorStop(0, '#fff'); gGrd.addColorStop(0.3, '#ffd700'); gGrd.addColorStop(1, 'rgba(255, 215, 0, 0)');
+    gCtx.fillStyle = gGrd; gCtx.beginPath(); gCtx.arc(32, 32, 32, 0, Math.PI * 2); gCtx.fill();
+
+    let stars = [], particles = [], bgStars = [];
+    let caught = 0, target = 5, gameOver = false;
+    let shakeIntensity = 0;
+
+    function init() {
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = W * DPR; canvas.height = H * DPR;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        stars = []; particles = []; caught = 0; gameOver = false; shakeIntensity = 0;
+        document.getElementById('score').innerText = `0 / ${target}`;
+        document.getElementById('score').style.opacity = '1';
+        document.getElementById('hint').style.opacity = '1';
+        document.getElementById('card').classList.remove('show');
+        document.getElementById('secretBtn').style.display = 'none';
+
+        // Безопасное размещение звезд (всегда на экране)
+        let padX = W * 0.15; 
+        let padY = H * 0.15;
         
-        shakeIntensity = 30;
-        for (let i = 0; i < 150; i++) {
-            particles.push({
-                x: W/2, y: H/2, vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 40,
-                life: 2.0, color: ['#ff9ec7', '#fff', '#ffe0ec', '#ffd700'][Math.floor(Math.random()*4)]
+        for (let i = 0; i < target; i++) {
+            let isGold = (i === target - 1);
+            stars.push({
+                x: padX + Math.random() * (W - padX * 2), 
+                y: padY + Math.random() * (H - padY * 2),
+                vx: (Math.random() - 0.5) * (isGold ? 5 : 2.5), 
+                vy: (Math.random() - 0.5) * (isGold ? 5 : 2.5),
+                size: isGold ? 35 : 18, active: true, isGold: isGold
             });
         }
-        playSound(800, 'square'); setTimeout(() => playSound(1000, 'square'), 150); setTimeout(() => playSound(1200, 'square'), 300);
 
-        setTimeout(() => {
-            document.getElementById('card').classList.add('show');
-            setTimeout(() => document.getElementById('secretBtn').style.display = 'inline-block', 1000);
-        }, 1200);
-    }, 500);
-}
-
-document.getElementById('secretBtn').addEventListener('click', () => {
-    document.getElementById('secretBtn').style.display = 'none';
-    document.querySelector('.card h1').innerText = "Ты нашла секрет! 🎉";
-    document.querySelector('.card p:nth-of-type(1)').innerText = "Я хочу провести с тобой еще миллион таких утр.";
-    document.querySelector('.card p:nth-of-type(2)').innerHTML = "Ты пойдешь со мной на <span class='accent'>свидание в эту пятницу</span>? 💖";
-    document.querySelector('.card p:nth-of-type(3)').innerText = "Жду твой ответ 😎";
-    
-    for (let i = 0; i < 80; i++) {
-        let el = document.createElement('div');
-        el.innerText = ['💖','💗','💘','✨','💕'][Math.floor(Math.random()*5)];
-        el.style.cssText = `position:fixed; left:50%; top:50%; font-size:${Math.random()*20+15}px; z-index:999; pointer-events:none; transition:all 2s cubic-bezier(0.1,0.8,0.3,1);`;
-        document.body.appendChild(el);
-        setTimeout(() => {
-            el.style.transform = `translate(${(Math.random()-0.5)*600}px, ${(Math.random()-0.5)*600}px) rotate(${Math.random()*360}deg) scale(0)`;
-            el.style.opacity = '0';
-        }, 10);
-        setTimeout(() => el.remove(), 2000);
-    }
-    playSound(600, 'sine', 2); playSound(800, 'sine', 2);
-});
-
-function update() {
-    if (shakeIntensity > 0) shakeIntensity *= 0.9;
-    if (shakeIntensity < 0.5) shakeIntensity = 0;
-
-    for (let s of stars) {
-        if (!s.active) continue;
-        s.x += s.vx; s.y += s.vy;
-        if (s.x < s.size || s.x > W - s.size) s.vx *= -1;
-        if (s.y < s.size || s.y > H - s.size) s.vy *= -1;
+        bgStars = [];
+        for (let i = 0; i < 80; i++) bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5 });
     }
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx; p.y += p.vy;
-        p.vx *= 0.96; p.vy *= 0.96;
-        p.life -= 0.02;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-}
-
-function render() {
-    ctx.fillStyle = 'rgba(10, 5, 16, 0.4)';
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.save();
-    if (shakeIntensity > 0) {
-        ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
-    }
-
-    ctx.fillStyle = '#ff9ec7';
-    for (let b of bgStars) {
-        ctx.globalAlpha = Math.max(0.1, Math.sin(performance.now() * 0.001 + b.x) * 0.5 + 0.5);
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    for (let s of stars) {
-        if (!s.active) continue;
+    canvas.addEventListener('pointerdown', (e) => {
+        if (gameOver) return;
         
-        ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x - s.vx * 8, s.y - s.vy * 8);
-        ctx.strokeStyle = s.isGold ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 158, 199, 0.5)';
-        ctx.lineWidth = s.size * 0.6;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+        if (!ambientStarted) {
+            ambientStarted = true;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.value = 60;
+                gain.gain.value = 0.05;
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start();
+            } catch(err) {}
+        }
 
-        const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.1;
-        const sprite = s.isGold ? goldSprite : starSprite;
-        ctx.drawImage(sprite, s.x - s.size * pulse * 2, s.y - s.size * pulse * 2, s.size * pulse * 4, s.size * pulse * 4);
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left, clickY = e.clientY - rect.top;
+
+        for (let i = stars.length - 1; i >= 0; i--) {
+            let s = stars[i];
+            if (!s.active) continue;
+            
+            const dist = Math.hypot(clickX - s.x, clickY - s.y);
+            if (dist < s.size + 50) { // Увеличенный радиус для удобства
+                s.active = false;
+                caught++;
+                
+                if (s.isGold) { playEpicChord(); shakeIntensity = 25; } 
+                else { playSound(500 + caught * 150); shakeIntensity = 10; }
+
+                for (let p = 0; p < (s.isGold ? 50 : 20); p++) {
+                    particles.push({
+                        x: s.x, y: s.y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12,
+                        life: 1.5, color: s.isGold ? '#ffd700' : (Math.random() > 0.5 ? '#ff9ec7' : '#fff')
+                    });
+                }
+
+                document.getElementById('score').innerText = `${caught} / ${target}`;
+                if (caught >= target) winGame();
+                break;
+            }
+        }
+    });
+
+    function winGame() {
+        gameOver = true;
+        setTimeout(() => {
+            document.getElementById('hint').style.opacity = '0';
+            document.getElementById('score').style.opacity = '0';
+            
+            shakeIntensity = 30;
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: W/2, y: H/2, vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 40,
+                    life: 2.0, color: ['#ff9ec7', '#fff', '#ffe0ec', '#ffd700'][Math.floor(Math.random()*4)]
+                });
+            }
+            playSound(800, 'square'); setTimeout(() => playSound(1000, 'square'), 150); setTimeout(() => playSound(1200, 'square'), 300);
+
+            setTimeout(() => {
+                document.getElementById('card').classList.add('show');
+                setTimeout(() => document.getElementById('secretBtn').style.display = 'inline-block', 1000);
+            }, 1200);
+        }, 500);
     }
 
-    for (let p of particles) {
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+    document.getElementById('secretBtn').addEventListener('click', () => {
+        document.getElementById('secretBtn').style.display = 'none';
+        document.querySelector('.card h1').innerText = "Ты нашла секрет! 🎉";
+        document.querySelector('.card p:nth-of-type(1)').innerText = "Я хочу провести с тобой еще миллион таких утр.";
+        document.querySelector('.card p:nth-of-type(2)').innerHTML = "Ты пойдешь со мной на <span class='accent'>свидание в эту пятницу</span>? 💖";
+        document.querySelector('.card p:nth-of-type(3)').innerText = "Жду твой ответ 😎";
+        
+        for (let i = 0; i < 80; i++) {
+            let el = document.createElement('div');
+            el.innerText = ['💖','💗','💘','✨','💕'][Math.floor(Math.random()*5)];
+            el.style.cssText = `position:fixed; left:50%; top:50%; font-size:${Math.random()*20+15}px; z-index:999; pointer-events:none; transition:all 2s cubic-bezier(0.1,0.8,0.3,1);`;
+            document.body.appendChild(el);
+            setTimeout(() => {
+                el.style.transform = `translate(${(Math.random()-0.5)*600}px, ${(Math.random()-0.5)*600}px) rotate(${Math.random()*360}deg) scale(0)`;
+                el.style.opacity = '0';
+            }, 10);
+            setTimeout(() => el.remove(), 2000);
+        }
+        playSound(600, 'sine', 2); playSound(800, 'sine', 2);
+    });
+
+    function update() {
+        if (shakeIntensity > 0) shakeIntensity *= 0.9;
+        if (shakeIntensity < 0.5) shakeIntensity = 0;
+
+        for (let s of stars) {
+            if (!s.active) continue;
+            s.x += s.vx; s.y += s.vy;
+            if (s.x < s.size || s.x > W - s.size) s.vx *= -1;
+            if (s.y < s.size || s.y > H - s.size) s.vy *= -1;
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.96; p.vy *= 0.96;
+            p.life -= 0.02;
+            if (p.life <= 0) particles.splice(i, 1);
+        }
     }
-    ctx.globalAlpha = 1;
-    ctx.restore();
-}
 
-function loop() {
-    requestAnimationFrame(loop);
-    update();
-    render();
-}
+    function render() {
+        ctx.fillStyle = 'rgba(10, 5, 16, 0.4)';
+        ctx.fillRect(0, 0, W, H);
 
-window.addEventListener('resize', init);
-init();
-loop();
+        ctx.save();
+        if (shakeIntensity > 0) {
+            ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
+        }
+
+        ctx.fillStyle = '#ff9ec7';
+        for (let b of bgStars) {
+            ctx.globalAlpha = Math.max(0.1, Math.sin(performance.now() * 0.001 + b.x) * 0.5 + 0.5);
+            ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        for (let s of stars) {
+            if (!s.active) continue;
+            
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(s.x - s.vx * 8, s.y - s.vy * 8);
+            ctx.strokeStyle = s.isGold ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 158, 199, 0.5)';
+            ctx.lineWidth = s.size * 0.6;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.1;
+            const sprite = s.isGold ? goldSprite : starSprite;
+            ctx.drawImage(sprite, s.x - s.size * pulse * 2, s.y - s.size * pulse * 2, s.size * pulse * 4, s.size * pulse * 4);
+        }
+
+        for (let p of particles) {
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
+
+    function loop() {
+        requestAnimationFrame(loop);
+        update();
+        render();
+    }
+
+    window.addEventListener('resize', init);
+    init();
+    loop();
+});
 </script>
 </body>
 </html>
