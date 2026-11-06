@@ -10,7 +10,7 @@
     height: 100vh; overflow: hidden; background: #0a0510; 
     font-family: 'Georgia', serif; touch-action: none; 
   }
-  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
   
   .hint { 
     position: fixed; top: 8%; left: 0; right: 0; text-align: center; 
@@ -24,7 +24,6 @@
     text-shadow: 0 0 20px #ff9ec7; transition: opacity 0.5s;
   }
 
-  /* Карточка */
   .card { 
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); 
     width: min(520px, 90vw); background: rgba(30, 14, 24, 0.95); 
@@ -41,7 +40,6 @@
   .card .accent { color: #ff9ec7; font-weight: bold; }
   .card .signature { margin-top: 25px; font-style: italic; color: #c98aa6; }
   
-  /* Секретная кнопка */
   .secret-btn {
     margin-top: 20px; padding: 15px 30px; border-radius: 50px; 
     background: linear-gradient(90deg, #ff6eb4, #ff9ec7); border: none; 
@@ -53,6 +51,9 @@
 </style>
 </head>
 <body>
+
+<!-- ВОТ ЕГО НЕ ХВАТАЛО! -->
+<canvas id="c"></canvas>
 
 <div class="hint" id="hint">Поймай 5 звезд ✨<br><span style="font-size:14px; opacity:0.7">(последняя будет золотой!)</span></div>
 <div class="score" id="score"></div>
@@ -67,11 +68,10 @@
 </div>
 
 <script>
-const canvas = document.getElementById('c') || document.querySelector('canvas');
+const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-// === ЗВУК ===
 let audioCtx;
 let ambientStarted = false;
 
@@ -94,7 +94,6 @@ function playEpicChord() {
     [400, 500, 600].forEach(f => playSound(f, 'triangle', 1.5));
 }
 
-// === СПРАЙТЫ ===
 const starSprite = document.createElement('canvas');
 starSprite.width = 64; starSprite.height = 64;
 const sCtx = starSprite.getContext('2d');
@@ -109,10 +108,9 @@ const gGrd = gCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
 gGrd.addColorStop(0, '#fff'); gGrd.addColorStop(0.3, '#ffd700'); gGrd.addColorStop(1, 'rgba(255, 215, 0, 0)');
 gCtx.fillStyle = gGrd; gCtx.beginPath(); gCtx.arc(32, 32, 32, 0, Math.PI * 2); gCtx.fill();
 
-// === ПЕРЕМЕННЫЕ ===
 let stars = [], particles = [], bgStars = [];
 let caught = 0, target = 5, gameOver = false;
-let shakeIntensity = 0; // Для тряски экрана
+let shakeIntensity = 0;
 
 function init() {
     W = window.innerWidth; H = window.innerHeight;
@@ -128,7 +126,7 @@ function init() {
     document.getElementById('secretBtn').style.display = 'none';
 
     for (let i = 0; i < target; i++) {
-        let isGold = (i === target - 1); // Последняя - золотая
+        let isGold = (i === target - 1);
         stars.push({
             x: Math.random() * (W - 150) + 75, y: Math.random() * (H - 250) + 125,
             vx: (Math.random() - 0.5) * (isGold ? 4 : 2), 
@@ -141,16 +139,16 @@ function init() {
     for (let i = 0; i < 80; i++) bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5 });
 }
 
-// === КЛИК ===
 canvas.addEventListener('pointerdown', (e) => {
     if (gameOver) return;
     
-    // Включаем фоновую музыку при первом клике (иначе iOS блокирует)
     if (!ambientStarted) {
         ambientStarted = true;
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.value = 60; // Низкий гул
+        osc.type = 'sine'; osc.frequency.value = 60;
         gain.gain.value = 0.05;
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start();
@@ -164,15 +162,13 @@ canvas.addEventListener('pointerdown', (e) => {
         if (!s.active) continue;
         
         const dist = Math.hypot(clickX - s.x, clickY - s.y);
-        if (dist < s.size + 40) { // Щедрый радиус для пальца
+        if (dist < s.size + 40) {
             s.active = false;
             caught++;
             
-            // Звук и тряска
             if (s.isGold) { playEpicChord(); shakeIntensity = 25; } 
             else { playSound(500 + caught * 150); shakeIntensity = 10; }
 
-            // Взрыв
             for (let p = 0; p < (s.isGold ? 50 : 20); p++) {
                 particles.push({
                     x: s.x, y: s.y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12,
@@ -193,7 +189,6 @@ function winGame() {
         document.getElementById('hint').style.opacity = '0';
         document.getElementById('score').style.opacity = '0';
         
-        // Мега-салют
         shakeIntensity = 30;
         for (let i = 0; i < 150; i++) {
             particles.push({
@@ -210,7 +205,6 @@ function winGame() {
     }, 500);
 }
 
-// === СЕКРЕТНАЯ КНОПКА ===
 document.getElementById('secretBtn').addEventListener('click', () => {
     document.getElementById('secretBtn').style.display = 'none';
     document.querySelector('.card h1').innerText = "Ты нашла секрет! 🎉";
@@ -218,7 +212,6 @@ document.getElementById('secretBtn').addEventListener('click', () => {
     document.querySelector('.card p:nth-of-type(2)').innerHTML = "Ты пойдешь со мной на <span class='accent'>свидание в эту пятницу</span>? 💖";
     document.querySelector('.card p:nth-of-type(3)').innerText = "Жду твой ответ 😎";
     
-    // Салют из сердечек
     for (let i = 0; i < 80; i++) {
         let el = document.createElement('div');
         el.innerText = ['💖','💗','💘','✨','💕'][Math.floor(Math.random()*5)];
@@ -233,9 +226,7 @@ document.getElementById('secretBtn').addEventListener('click', () => {
     playSound(600, 'sine', 2); playSound(800, 'sine', 2);
 });
 
-// === ОБНОВЛЕНИЕ И РЕНДЕР ===
 function update() {
-    // Тряска затухает
     if (shakeIntensity > 0) shakeIntensity *= 0.9;
     if (shakeIntensity < 0.5) shakeIntensity = 0;
 
@@ -259,13 +250,11 @@ function render() {
     ctx.fillStyle = 'rgba(10, 5, 16, 0.4)';
     ctx.fillRect(0, 0, W, H);
 
-    // Применяем тряску экрана
     ctx.save();
     if (shakeIntensity > 0) {
         ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
     }
 
-    // Фон
     ctx.fillStyle = '#ff9ec7';
     for (let b of bgStars) {
         ctx.globalAlpha = Math.max(0.1, Math.sin(performance.now() * 0.001 + b.x) * 0.5 + 0.5);
@@ -273,11 +262,9 @@ function render() {
     }
     ctx.globalAlpha = 1;
 
-    // Звезды с кометным хвостом
     for (let s of stars) {
         if (!s.active) continue;
         
-        // Хвост
         ctx.beginPath();
         ctx.moveTo(s.x, s.y);
         ctx.lineTo(s.x - s.vx * 8, s.y - s.vy * 8);
@@ -286,21 +273,18 @@ function render() {
         ctx.lineCap = 'round';
         ctx.stroke();
 
-        // Сама звезда
         const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.1;
         const sprite = s.isGold ? goldSprite : starSprite;
         ctx.drawImage(sprite, s.x - s.size * pulse * 2, s.y - s.size * pulse * 2, s.size * pulse * 4, s.size * pulse * 4);
     }
 
-    // Частицы
     for (let p of particles) {
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
         ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
     }
     ctx.globalAlpha = 1;
-    
-    ctx.restore(); // Убираем тряску для следующего кадра
+    ctx.restore();
 }
 
 function loop() {
