@@ -15,8 +15,8 @@
   /* Текст внутри сердца */
   #heartText {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-size: clamp(24px, 6vw, 42px); color: #fff; font-weight: bold;
-    text-shadow: 0 0 20px #ff6eb4, 0 0 40px #ff6eb4, 0 0 60px #ff6eb4;
+    font-size: clamp(28px, 8vw, 50px); color: #ffffff; font-weight: bold; font-family: 'Georgia', serif;
+    text-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493, 0 0 60px #ff69b4, 0 0 80px #ff69b4;
     opacity: 0; transition: opacity 1.5s ease; z-index: 8; text-align: center; 
     pointer-events: none; width: 90%; line-height: 1.2;
   }
@@ -54,7 +54,7 @@
 <div class="hint" id="hint">Поймай 5 звезд ✨<br><span style="font-size:14px; opacity:0.7">(золотую звезду нужно подержать!)</span></div>
 <div class="score" id="score"></div>
 
-<div id="heartText">Я тебя люблю, Солнце ☀️</div>
+<div id="heartText">Я тебя люблю,<br>Солнце ☀️</div>
 
 <div class="card" id="card">
   <h1>Солнце ☀️</h1>
@@ -94,13 +94,15 @@ window.addEventListener('load', () => {
     }
 
     let stars = [], particles = [], sparks = [], bgStarsFar = [], bgStarsNear = [], shockwaves = [], comets = [];
-    let caught = 0, target = 5, gameOver = false, shakeIntensity = 0;
+    let caught = 0, target = 5, shakeIntensity = 0;
     let gamePhase = 'playing'; // playing | forming_heart | showing_heart | fading_heart | showing_card
     
     let holdTarget = null;
     let holdProgress = 0;
+    let heartFade = 1; // Для плавного исчезновения сердца
 
-    function drawStarShape(ctx, cx, cy, spikes, outerRadius, innerRadius, color, glow) {
+    // Красивая функция отрисовки звезды с объемным градиентом
+    function drawStarShape(ctx, cx, cy, spikes, outerRadius, innerRadius, color, glow, isGold) {
         let rot = Math.PI / 2 * 3; let x = cx; let y = cy; let step = Math.PI / spikes;
         ctx.beginPath(); ctx.moveTo(cx, cy - outerRadius);
         for (let i = 0; i < spikes; i++) {
@@ -110,7 +112,16 @@ window.addEventListener('load', () => {
             ctx.lineTo(x, y); rot += step;
         }
         ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
-        ctx.fillStyle = color;
+        
+        // Объемный градиент
+        let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerRadius);
+        if (isGold) {
+            grd.addColorStop(0, '#fff'); grd.addColorStop(0.3, '#fff700'); grd.addColorStop(1, '#ff8c00');
+        } else {
+            grd.addColorStop(0, '#fff'); grd.addColorStop(0.4, '#ff9ec7'); grd.addColorStop(1, '#ff1493');
+        }
+        
+        ctx.fillStyle = grd;
         if (glow) { ctx.shadowBlur = glow; ctx.shadowColor = color; }
         ctx.fill(); ctx.shadowBlur = 0;
     }
@@ -118,8 +129,8 @@ window.addEventListener('load', () => {
     function init() {
         W = window.innerWidth; H = window.innerHeight; canvas.width = W * DPR; canvas.height = H * DPR;
         canvas.style.width = W + 'px'; canvas.style.height = H + 'px'; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        stars = []; particles = []; sparks = []; shockwaves = []; comets = []; caught = 0; gameOver = false; shakeIntensity = 0;
-        gamePhase = 'playing'; holdTarget = null; holdProgress = 0;
+        stars = []; particles = []; sparks = []; shockwaves = []; comets = []; caught = 0; shakeIntensity = 0;
+        gamePhase = 'playing'; holdTarget = null; holdProgress = 0; heartFade = 1;
         
         document.getElementById('score').innerText = `0 / ${target}`; document.getElementById('score').style.opacity = '1';
         document.getElementById('hint').style.opacity = '1'; document.getElementById('card').classList.remove('show');
@@ -133,7 +144,7 @@ window.addEventListener('load', () => {
             stars.push({ 
                 x: padX + Math.random() * (W - padX * 2), y: padY + Math.random() * (H - padY * 2),
                 vx: (Math.random() - 0.5) * (isGold ? 5 : 3.5), vy: (Math.random() - 0.5) * (isGold ? 5 : 3.5),
-                size: isGold ? 40 : 20, active: true, isGold: isGold, angle: Math.random() * Math.PI * 2
+                size: isGold ? 45 : 22, active: true, isGold: isGold, angle: Math.random() * Math.PI * 2
             });
         }
         
@@ -192,42 +203,44 @@ window.addEventListener('load', () => {
         [600, 800, 1000, 1200, 1400].forEach((f, i) => setTimeout(() => playSound(f, 'triangle', 1.5), i * 100)); 
         shakeIntensity = 50; 
         
-        // Создаем частицы для сборки сердца
-        for (let i = 0; i < 250; i++) { 
+        // Масштаб для ОГРОМНОГО сердца
+        let scale = Math.min(W, H) * 0.022;
+
+        // Частицы для сборки контура
+        for (let i = 0; i < 350; i++) { 
             let t = Math.random() * Math.PI * 2;
             let hx = 16 * Math.pow(Math.sin(t), 3);
             let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            let scale = Math.min(W, H) * 0.012;
             
-            // Добавляем немного случайности вокруг контура
-            let rx = hx * scale + (Math.random() - 0.5) * 20;
-            let ry = -hy * scale + (Math.random() - 0.5) * 20;
+            // Немного разбрасываем по контуру
+            let rx = hx * scale + (Math.random() - 0.5) * 15;
+            let ry = -hy * scale + (Math.random() - 0.5) * 15;
 
             particles.push({ 
                 x: W/2, y: H/2, 
                 tx: W/2 + rx, ty: H/2 + ry, 
-                vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30, 
-                life: 2.0, color: ['#ffd700', '#fff', '#ff9ec7'][Math.floor(Math.random()*3)] 
+                vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 40, 
+                life: 2.0, color: ['#fff', '#ff9ec7', '#ff1493'][Math.floor(Math.random()*3)] 
             }); 
         }
         
         setTimeout(() => {
             gamePhase = 'showing_heart';
             document.getElementById('heartText').classList.add('show');
-        }, 1800); // Ждем, пока частицы слетятся
+        }, 1500); 
         
         setTimeout(() => {
             gamePhase = 'fading_heart';
             document.getElementById('heartText').classList.remove('show');
-            playSound(400, 'sine', 2); // Звук затухания
-        }, 4500); // Держим сердце с текстом 2.5 секунды
+            playSound(300, 'sine', 2); 
+        }, 5000); 
         
         setTimeout(() => {
             gamePhase = 'showing_card';
             document.getElementById('hint').style.opacity = '0'; 
             document.getElementById('score').style.opacity = '0'; 
             document.getElementById('card').classList.add('show'); 
-        }, 6000); // Показываем карточку, когда сердце растворилось
+        }, 6500); 
     }
 
     document.getElementById('sendBtn').addEventListener('click', () => {
@@ -257,7 +270,7 @@ window.addEventListener('load', () => {
         
         if (holdTarget) {
             holdProgress += 0.015;
-            if (Math.random() > 0.5) sparks.push({ x: holdTarget.x + (Math.random()-0.5)*100, y: holdTarget.y + (Math.random()-0.5)*100, vx: (holdTarget.x - (holdTarget.x + (Math.random()-0.5)*100))/15, vy: (holdTarget.y - (holdTarget.y + (Math.random()-0.5)*100))/15, life: 1, size: 2 });
+            if (Math.random() > 0.5) sparks.push({ x: holdTarget.x + (Math.random()-0.5)*120, y: holdTarget.y + (Math.random()-0.5)*120, vx: (holdTarget.x - (holdTarget.x + (Math.random()-0.5)*120))/20, vy: (holdTarget.y - (holdTarget.y + (Math.random()-0.5)*120))/20, life: 1, size: 2 });
             if (holdProgress >= 1) { triggerWin(); document.getElementById('score').innerText = `5 / 5`; }
         }
 
@@ -271,25 +284,27 @@ window.addEventListener('load', () => {
             if (s.y < s.size || s.y > H - s.size) s.vy *= -1; 
         }
         
+        // Затухание сердца
+        if (gamePhase === 'fading_heart' && heartFade > 0) {
+            heartFade -= 0.015;
+        }
+
         for (let i = particles.length - 1; i >= 0; i--) { 
             let p = particles[i]; 
             
             if (gamePhase === 'forming_heart' || gamePhase === 'showing_heart') {
-                // Магия притяжения к сердцу
                 if (p.tx !== undefined) {
                     p.x += (p.tx - p.x) * 0.08;
                     p.y += (p.ty - p.y) * 0.08;
-                    p.life = 1.0; // Держим их живыми
+                    p.life = 1.0; 
                 } else {
                     p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.015;
                 }
             } else if (gamePhase === 'fading_heart') {
-                // Затухание
                 p.x += (p.tx - p.x) * 0.05;
                 p.y += (p.ty - p.y) * 0.05;
                 p.life -= 0.02; 
             } else {
-                // Обычная физика
                 p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.015; 
             }
 
@@ -328,6 +343,34 @@ window.addEventListener('load', () => {
         for (let b of bgStarsNear) { ctx.globalAlpha = Math.max(0.2, Math.sin(performance.now() * 0.002 + b.x) * 0.5 + 0.5); ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI * 2); ctx.fill(); }
         ctx.globalAlpha = 1;
 
+        // Отрисовка ОГРОМНОГО РОЗОВОГО СЕРДЦА
+        if (gamePhase === 'showing_heart' || gamePhase === 'fading_heart') {
+            let scale = Math.min(W, H) * 0.022;
+            ctx.beginPath();
+            for (let i = 0; i <= 100; i++) {
+                let angle = i / 100 * Math.PI * 2;
+                let x = 16 * Math.pow(Math.sin(angle), 3);
+                let y = 13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle);
+                if (i === 0) ctx.moveTo(W/2 + x * scale, H/2 - y * scale);
+                else ctx.lineTo(W/2 + x * scale, H/2 - y * scale);
+            }
+            ctx.closePath();
+            
+            // Заливка сердца
+            let heartGrd = ctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, scale * 15);
+            heartGrd.addColorStop(0, `rgba(255, 20, 147, ${0.9 * heartFade})`); // Ярко-розовый
+            heartGrd.addColorStop(1, `rgba(255, 105, 180, ${0.6 * heartFade})`); // Более светлый
+            
+            ctx.fillStyle = heartGrd;
+            ctx.shadowBlur = 50; ctx.shadowColor = `rgba(255, 20, 147, ${heartFade})`;
+            ctx.fill();
+            
+            // Обводка сердца
+            ctx.strokeStyle = `rgba(255, 255, 255, ${heartFade})`;
+            ctx.lineWidth = 4; ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
         for (let c of comets) {
             ctx.strokeStyle = 'rgba(255,255,255,'+c.life+')'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x - c.vx * 10, c.y - c.vy * 10); ctx.stroke();
@@ -336,45 +379,44 @@ window.addEventListener('load', () => {
         for (let sw of shockwaves) {
             ctx.strokeStyle = `rgba(255, 158, 199, ${sw.life})`; ctx.lineWidth = 3;
             ctx.beginPath(); ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2); ctx.stroke();
-            ctx.strokeStyle = `rgba(255, 255, 255, ${sw.life * 0.5})`; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.arc(sw.x, sw.y, sw.r * 0.9, 0, Math.PI * 2); ctx.stroke();
         }
         
         for (let s of sparks) { ctx.globalAlpha = s.life; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill(); }
         ctx.globalAlpha = 1;
 
-        // Отрисовка звезд
+        // Звезды
         for (let s of stars) {
             if (!s.active) continue;
             const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.1;
             const r = s.size * pulse;
             ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angle);
-            ctx.beginPath(); ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2);
-            let grd = ctx.createRadialGradient(0,0,0, 0,0,r*2.5);
-            grd.addColorStop(0, s.isGold ? 'rgba(255,215,0,0.6)' : 'rgba(255,158,199,0.5)'); grd.addColorStop(1, 'transparent');
+            
+            // Мощное свечение
+            ctx.beginPath(); ctx.arc(0, 0, r * 3, 0, Math.PI * 2);
+            let grd = ctx.createRadialGradient(0,0,0, 0,0,r*3);
+            grd.addColorStop(0, s.isGold ? 'rgba(255,215,0,0.7)' : 'rgba(255,20,147,0.6)'); 
+            grd.addColorStop(1, 'transparent');
             ctx.fillStyle = grd; ctx.fill();
-            drawStarShape(ctx, 0, 0, 5, r, r * 0.4, s.isGold ? '#ffd700' : '#fff', 15);
+            
+            drawStarShape(ctx, 0, 0, 5, r, r * 0.4, s.isGold ? '#ffd700' : '#ff1493', 20, s.isGold);
             ctx.restore();
 
             if (s === holdTarget) {
                 ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size + 25, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * holdProgress));
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-                ctx.shadowBlur = 20; ctx.shadowColor = '#ffd700'; ctx.stroke(); ctx.shadowBlur = 0;
+                ctx.arc(s.x, s.y, s.size + 30, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * holdProgress));
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+                ctx.shadowBlur = 25; ctx.shadowColor = '#ffd700'; ctx.stroke(); ctx.shadowBlur = 0;
             }
         }
         
-        // Отрисовка частиц (сердце)
+        // Частицы
         for (let p of particles) { 
             ctx.globalAlpha = Math.max(0, p.life); 
             ctx.fillStyle = p.color; 
-            
-            // Если собираем сердце, добавляем им свечение
-            if (gamePhase === 'forming_heart' || gamePhase === 'showing_heart') {
+            if (gamePhase !== 'playing' && gamePhase !== 'showing_card') {
                 ctx.shadowBlur = 15; ctx.shadowColor = p.color;
             }
-            
-            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); 
             ctx.shadowBlur = 0;
         }
         ctx.globalAlpha = 1; ctx.restore();
