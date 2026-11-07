@@ -58,18 +58,27 @@
   .subtitle { font-size: 1.2rem; letter-spacing: 3px; text-transform: uppercase; color: var(--primary); font-weight: 700; margin-bottom: 15px; }
 
   /* Сетка карточек (Glassmorphism) */
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-top: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 40px; }
   .card { 
     background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); 
     padding: 30px; border-radius: 20px; backdrop-filter: blur(10px);
     transition: all 0.3s ease; position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
   }
   .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0; transition: opacity 0.3s; }
-  .card:hover { transform: translateY(-10px); border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1); }
+  .card:hover { transform: translateY(-5px); border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1); }
   .card:hover::before { opacity: 1; }
   .card .icon { font-size: 2.5rem; margin-bottom: 15px; text-shadow: 0 0 20px currentColor; }
   .card h3 { font-size: 1.4rem; margin-bottom: 10px; color: #fff; }
-  .card p { font-size: 0.95rem; }
+  .card p { font-size: 0.95rem; flex-grow: 1; margin-bottom: 20px; }
+  
+  /* Кнопка подробнее */
+  .more-btn { 
+    align-self: flex-start; padding: 8px 20px; border-radius: 30px; 
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  }
+  .more-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
 
   /* Статистика (Счетчики) */
   .stats-grid { display: flex; gap: 40px; margin-top: 50px; flex-wrap: wrap; }
@@ -77,14 +86,14 @@
   .stat-number { font-size: 4rem; font-weight: 900; color: var(--pink); text-shadow: 0 0 30px rgba(255,0,127,0.6); margin-bottom: 10px; }
   .stat-label { font-size: 1.1rem; color: var(--muted); }
 
-  /* Прогресс-бар и кнопки */
+  /* Прогресс-бар и кнопки управления */
   .progress-bar { position: fixed; top: 0; left: 0; height: 4px; background: var(--accent); width: 0%; transition: width 0.4s ease; z-index: 10; box-shadow: 0 0 15px var(--accent); }
   .controls { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 15px; z-index: 10; }
   .btn { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); transition: all 0.3s; }
   .btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); transform: scale(1.1); }
   .slide-counter { position: fixed; bottom: 40px; left: 40px; font-size: 1.2rem; color: var(--muted); font-weight: 700; letter-spacing: 2px; z-index: 10; }
 
-  /* Специфичные элементы для слайдов */
+  /* Специфичные элементы */
   .center-content { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
   .split-layout { display: flex; align-items: center; gap: 50px; }
   .split-layout > div { flex: 1; }
@@ -94,6 +103,35 @@
   @keyframes spin { 100% { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
 
+  /* ===== МОДАЛЬНОЕ ОКНО (ПОДРОБНЕЕ) ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(5, 8, 20, 0.85); backdrop-filter: blur(10px);
+    display: flex; justify-content: center; align-items: center; z-index: 100;
+    opacity: 0; visibility: hidden; transition: all 0.4s ease;
+  }
+  .modal-overlay.active { opacity: 1; visibility: visible; }
+  
+  .modal-content {
+    background: rgba(20, 25, 40, 0.95); border: 1px solid var(--accent);
+    padding: 40px; border-radius: 20px; width: 90%; max-width: 600px;
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+    transform: translateY(30px) scale(0.9); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+  
+  .close-btn {
+    position: absolute; top: 20px; right: 25px; font-size: 30px; color: var(--muted);
+    cursor: pointer; transition: color 0.3s; line-height: 1;
+  }
+  .close-btn:hover { color: var(--pink); text-shadow: 0 0 10px var(--pink); }
+  
+  .modal-content h3 { font-size: 2rem; color: var(--accent); margin-bottom: 20px; text-shadow: 0 0 15px rgba(0,240,255,0.4); }
+  .modal-content p { font-size: 1.1rem; color: #ccc; margin-bottom: 15px; }
+  .modal-content ul { margin-left: 20px; color: #ccc; font-size: 1.1rem; line-height: 1.6; }
+  .modal-content li { margin-bottom: 10px; }
+  .modal-content strong { color: #fff; }
+
   /* Мобильная адаптация */
   @media (max-width: 768px) {
     .slide { padding: 40px 20px; }
@@ -101,6 +139,7 @@
     .stats-grid { flex-direction: column; gap: 20px; }
     .controls { right: 20px; bottom: 20px; }
     .slide-counter { left: 20px; bottom: 30px; }
+    .modal-content { padding: 30px 20px; }
   }
 </style>
 </head>
@@ -123,29 +162,32 @@
     </div>
   </div>
 
-  <!-- Слайд 2 -->
+  <!-- Слайд 2: Вызовы -->
   <div class="slide" data-slide="1">
     <h2 class="anim-left d-1">Вызовы Традиционного Банкинга</h2>
     <div class="grid">
       <div class="card anim-up d-2">
         <div class="icon" style="color: #ff4444;">⏳</div>
         <h3>Медлительность</h3>
-        <p>Очереди, бумажная волокита и ожидание одобрения кредита неделями. Клиенты хотят мгновенных решений.</p>
+        <p>Очереди, бумажная волокита и ожидание одобрения кредита неделями.</p>
+        <button class="more-btn" onclick="openModal('Проблема медлительности', '<p>Традиционные банки используют устаревшие ИТ-системы, которые обрабатывают данные вручную или полуавтоматически.</p><ul><li><strong>Кредиты:</strong> Одобрение может занимать от 3 до 14 дней из-за ручной проверки документов.</li><li><strong>Оформление карт:</strong> Требует визита в отделение и ожидания курьера.</li><li><strong>Решение:</strong> Автоматизация процессов (STP) и скоринг на базе ИИ позволяют сократить время до 2-3 минут.</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-3">
         <div class="icon" style="color: #ffbb00;">📍</div>
         <h3>География</h3>
-        <p>Привязка к отделениям. Банк должен быть там, где находится клиент — в его смартфоне 24/7.</p>
+        <p>Привязка к отделениям. Банк должен быть там, где находится клиент.</p>
+        <button class="more-btn" onclick="openModal('Географическая привязка', '<p>Физические отделения — это огромные затраты на аренду, безопасность и персонал.</p><ul><li><strong>Проблема:</strong> В отдаленных районах банкоматов и отделений может просто не быть, что ограничивает доступ к финансам.</li><li><strong>Решение:</strong> Мобильные приложения и СБП (Система быстрых платежей) стирают географические границы. Банк всегда в кармане, доступен 24/7 по всему миру.</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-4">
         <div class="icon" style="color: #ff4444;">💸</div>
         <h3>Высокие издержки</h3>
-        <p>Содержание тысяч отделений и штата сотрудников ложится тяжелым грузом на себестоимость услуг.</p>
+        <p>Содержание тысяч отделений и штата сотрудников бьет по себестоимости.</p>
+        <button class="more-btn" onclick="openModal('Операционные издержки', '<p>Каждое физическое отделение — это дорогостоящий актив.</p><ul><li><strong>Инкассация:</strong> Перевозка наличных требует дорогой логистики и охраны.</li><li><strong>Обслуживание:</strong> Зарплаты сотрудников, обучение, налоги на недвижимость.</li><li><strong>Эффект цифровизации:</strong> Перевод 90% операций в онлайн снижает издержки банка на 40-50%, позволяя предлагать клиентам лучшие условия (высокий кэшбэк, низкие ставки).</li></ul>')">Подробнее +</button>
       </div>
     </div>
   </div>
 
-  <!-- Слайд 3 -->
+  <!-- Слайд 3: Трансформация -->
   <div class="slide" data-slide="2">
     <div class="split-layout">
       <div>
@@ -160,7 +202,7 @@
     </div>
   </div>
 
-  <!-- Слайд 4 -->
+  <!-- Слайд 4: Мобильный банкинг -->
   <div class="slide" data-slide="3">
     <h2 class="anim-left d-1">Мобильный Банкинг</h2>
     <p class="anim-left d-2">Приложение как основной интерфейс взаимодействия с клиентом.</p>
@@ -169,52 +211,59 @@
         <div class="icon" style="color: var(--accent);">📱</div>
         <h3>24/7 Доступ</h3>
         <p>Любые операции в любое время суток без выходных.</p>
+        <button class="more-btn" onclick="openModal('Доступ 24/7', '<p>Мобильный банк работает без перерывов на обед и выходных.</p><ul><li>Вы можете оплатить ЖКХ, оформить вклад или заблокировать карту в 3 часа ночи.</li><li>Push-уведомления мгновенно сообщают о любых транзакциях, обеспечивая финансовый контроль.</li><li>Встроенные чат-боты (ИИ) отвечают на 80% типовых вопросов клиентов за секунды.</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-4">
         <div class="icon" style="color: var(--accent);">⚡</div>
         <h3>СБП и Мгновенно</h3>
         <p>Переводы по номеру телефона за секунды, без комиссий и реквизитов.</p>
+        <button class="more-btn" onclick="openModal('Система Быстрых Платежей (СБП)', '<p>СБП — это прорыв в розничных платежах.</p><ul><li><strong>Удобство:</strong> Забудьте про номер карты и реквизиты. Достаточно знать номер телефона получателя.</li><li><strong>Оплата по QR:</strong> Оплата покупок в магазинах без физической карты.</li><li><strong>Без границ:</strong> Переводы между клиентами разных банков происходят за 3-5 секунд без комиссии (до 100 тыс. руб. в месяц).</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-4">
         <div class="icon" style="color: var(--accent);">💳</div>
         <h3>Виртуальные Карты</h3>
-        <p>Выпуск карты в один клик прямо в приложении для безопасных покупок.</p>
+        <p>Выпуск карты в один клик прямо в приложении.</p>
+        <button class="more-btn" onclick="openModal('Виртуальные карты и безопасность', '<p>Виртуальные карты идеально подходят для безопасных покупок в интернете.</p><ul><li><strong>Одноразовые карты:</strong> Выпускаются для оплаты в подозрительных сервисах и сгорают после первой транзакции.</li><li><strong>Подписки:</strong> Удобно привязывать к сервисам (Netflix, Spotify), не используя основную карту.</li><li><strong>Мгновенный выпуск:</strong> Карта готова к использованию через 10 секунд после нажатия кнопки.</li></ul>')">Подробнее +</button>
       </div>
     </div>
   </div>
 
-  <!-- Слайд 5 -->
+  <!-- Слайд 5: ИИ -->
   <div class="slide" data-slide="4">
     <h2 class="anim-left d-1">Искусственный Интеллект</h2>
     <div class="grid">
       <div class="card anim-up d-2">
         <div class="icon" style="color: #b33cff;">🧠</div>
         <h3>Скоринг</h3>
-        <p>ИИ анализирует тысячи факторов и одобряет кредиты за минуты с минимальным риском.</p>
+        <p>ИИ анализирует тысячи факторов и одобряет кредиты за минуты.</p>
+        <button class="more-btn" onclick="openModal('ИИ в Скоринге', '<p>Раньше решение по кредиту принимал человек, оценивая справки о доходах.</p><ul><li><strong>Big Data:</strong> ИИ анализирует не только доход, но и вашу платежную дисциплину, поведение в приложении, покупки и даже активность в соцсетях (с согласия).</li><li><strong>Скорость:</strong> Кредитный конвейер принимает решение за 1-2 минуты.</li><li><strong>Точность:</strong> Машинное обучение снижает процент невозвратов (дефолтов) с 10% до 3-4%.</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-3">
         <div class="icon" style="color: #b33cff;">🤖</div>
         <h3>Чат-боты</h3>
-        <p>Виртуальные ассистенты решают 80% рутинных вопросов без операторов.</p>
+        <p>Виртуальные ассистенты решают 80% рутинных вопросов.</p>
+        <button class="more-btn" onclick="openModal('Голосовые и текстовые ассистенты', '<p>Чат-боты экономят время клиентов и ресурсы банка.</p><ul><li><strong>NLP (Обработка естественного языка):</strong> Бот понимает свободную речь. Вы можете написать: «Сколько я потратил на такси в марте?» и он выдаст отчет.</li><li><strong>Голосовые помощники:</strong> Управление счетами голосом через умные колонки (Алиса, Siri).</li><li>Сложные вопросы передаются живому оператору с сохранением истории диалога.</li></ul>')">Подробнее +</button>
       </div>
       <div class="card anim-up d-4">
         <div class="icon" style="color: #b33cff;">🎯</div>
         <h3>Персонализация</h3>
-        <p>Предложение кэшбэка и продуктов, которые идеально подходят именно вам.</p>
+        <p>Предложение продуктов, которые идеально подходят именно вам.</p>
+        <button class="more-btn" onclick="openModal('Гиперперсонализация', '<p>Банк знает о ваших тратах больше, чем вы сами.</p><ul><li><strong>Умный кэшбэк:</strong> Алгоритм замечает, что вы часто ходите в кофейни, и предлагает повышенный кэшбэк именно на рестораны.</li><li><strong>Инвестиции:</strong> Если на счете накапливается крупная сумма, система сама предложит открыть вклад или инвест-продукт с высоким процентом.</li></ul>')">Подробнее +</button>
       </div>
     </div>
   </div>
 
-  <!-- Слайд 6 -->
+  <!-- Слайд 6: Блокчейн -->
   <div class="slide" data-slide="5">
     <div class="center-content">
       <h2 class="anim-up d-1" style="color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.5);">Блокчейн</h2>
       <h1 class="anim-up d-2" style="font-size: clamp(2rem, 4vw, 3.5rem); background: linear-gradient(90deg, #ffd700, #ff8c00); -webkit-background-clip: text;">Прозрачность и Безопасность</h1>
       <p class="anim-up d-3">Смарт-контракты и распределенные реестры исключают человеческий фактор и подделку транзакций.</p>
+      <button class="more-btn anim-up d-4" style="margin-top: 30px;" onclick="openModal('Технология Блокчейн', '<p>Блокчейн — это база данных, где информация хранится в виде цепочки блоков, и каждый блок связан с предыдущим криптографической подписью.</p><ul><li><strong>Смарт-контракты:</strong> Самовыполняющиеся контракты. Например, автоматическая выплата страховки при задержке рейса (система сама видит задержку и переводит деньги без бюрократии).</li><li><strong>Безопасность:</strong> Данные невозможно подделать или удалить.</li><li><strong>Трансграничные платежи:</strong> Переводы между странами занимают минуты вместо 3-5 банковских дней.</li></ul>')">Узнать, как это работает</button>
     </div>
   </div>
 
-  <!-- Слайд 7 -->
+  <!-- Слайд 7: Биометрия -->
   <div class="slide" data-slide="6">
     <h2 class="anim-left d-1">Биометрическая Защита</h2>
     <p class="anim-left d-2">Пароли уходят в прошлое. Безопасность на уровне вашего лица и голоса.</p>
@@ -222,30 +271,34 @@
       <div class="card anim-up d-3" style="text-align: center;">
         <div class="icon" style="color: #00ff88;">👤</div>
         <h3>Face ID</h3>
+        <button class="more-btn" style="align-self: center;" onclick="openModal('Распознавание лиц', '<p>Технология 3D-сканирования лица позволяет войти в приложение за 0.5 секунды.</p><ul><li><strong>Живость:</strong> ИИ отличает реальное лицо от фотографии или маски.</li><li><strong>Удаленная идентификация:</strong> Вы можете открыть счет или карту, просто посмотрев в камеру телефона, без визита в банк.</li></ul>')">Подробнее</button>
       </div>
       <div class="card anim-up d-4" style="text-align: center;">
         <div class="icon" style="color: #00ff88;">👆</div>
         <h3>Touch ID</h3>
+        <button class="more-btn" style="align-self: center;" onclick="openModal('Отпечаток пальца', '<p>Дактилоскопия остается одним из самых быстрых и удобных методов.</p><ul><li>Используется для подтверждения переводов крупных сумм.</li><li>Защищает от того, чтобы кто-то подсмотрел ваш пароль.</li></ul>')">Подробнее</button>
       </div>
       <div class="card anim-up d-4" style="text-align: center;">
         <div class="icon" style="color: #00ff88;">🗣️</div>
         <h3>Голосовой слепок</h3>
+        <button class="more-btn" style="align-self: center;" onclick="openModal('Голосовая биометрия', '<p>Используется в колл-центрах для быстрой идентификации клиента.</p><ul><li><strong>Антифрод:</strong> Система анализирует тембр, частоту и интонации, выявляя мошенников, даже если они знают кодовое слово.</li><li>Позволяет сократить время разговора с оператором на 30-40%.</li></ul>')">Подробнее</button>
       </div>
     </div>
   </div>
 
-  <!-- Слайд 8 -->
+  <!-- Слайд 8: Геймификация -->
   <div class="slide" data-slide="7">
     <div class="split-layout">
       <div class="anim-left d-1">
         <div class="card" style="padding: 50px; border-color: var(--pink);">
           <h2 style="color: var(--pink); text-shadow: 0 0 20px var(--pink); margin-bottom: 20px;">Геймификация</h2>
           <p>Банки внедряют игровые механики: квесты за покупки, уровни лояльности, ачивки за экономию. Это повышает вовлеченность клиентов на <span class="highlight">40%</span>.</p>
+          <button class="more-btn" style="border-color: var(--pink); color: var(--pink); margin-top: 20px;" onclick="openModal('Геймификация в банкинге', '<p>Скучные финансовые операции превращаются в увлекательную игру.</p><ul><li><strong>Кэшбэк-квесты:</strong> «Соверши 5 покупок в кафе и получи 1000 бонусов».</li><li><strong>Сбережения:</strong> Приложения округляют каждую покупку до целого числа и переводят сдачу на накопительный счет («Копилка»).</li><li><strong>Уровни:</strong> Чем активнее клиент, тем выше его статус (например, Platinum или Gold) и больше привилегий.</li></ul>')">Подробнее +</button>
         </div>
       </div>
       <div class="anim-up d-2">
         <h2>Клиентский Опыт</h2>
-        <p>UI/UX дизайн становится главным конкурентным преимуществом. Удобство интерфейса важнее, чем бренд банка.</p>
+        <p>UI/UX дизайн становится главным конкурентным преимуществом. Удобство интерфейса важнее, чем бренд банка. Клиенты готовы менять банк, если в приложении неудобный перевод или сложно найти историю операций.</p>
       </div>
     </div>
   </div>
@@ -275,11 +328,20 @@
       <h1 class="anim-up d-1" style="font-size: clamp(3rem, 7vw, 6rem);">Будущее уже<br>наступило</h1>
       <p class="anim-up d-2" style="color: #fff; font-size: 1.5rem;">Спасибо за внимание!</p>
       <div class="anim-up d-3" style="margin-top: 40px;">
-        <button class="btn" style="width: 150px; border-radius: 30px; font-size: 1rem; font-weight: bold; background: var(--primary); border: none;">Начать сначала</button>
+        <button class="btn" style="width: 200px; border-radius: 30px; font-size: 1rem; font-weight: bold; background: var(--primary); border: none;" onclick="changeSlide(-9)">Начать сначала</button>
       </div>
     </div>
   </div>
 
+</div>
+
+<!-- Модальное окно -->
+<div class="modal-overlay" id="infoModal" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <span class="close-btn" onclick="closeModal(event)">&times;</span>
+    <h3 id="modalTitle">Заголовок</h3>
+    <div id="modalText" style="margin-top: 15px;"></div>
+  </div>
 </div>
 
 <div class="controls">
@@ -288,7 +350,23 @@
 </div>
 
 <script>
-  // === ЛОГИКА ПЕРЕКЛЮЧЕНИЯ СЛАЙДОВ ===
+  // === МОДАЛЬНОЕ ОКНО ===
+  const modal = document.getElementById('infoModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalText = document.getElementById('modalText');
+
+  function openModal(title, text) {
+    modalTitle.innerHTML = title;
+    modalText.innerHTML = text;
+    modal.classList.add('active');
+  }
+
+  function closeModal(e) {
+    if (e) e.stopPropagation(); // Предотвращаем всплытие, чтобы не переключить слайд
+    modal.classList.remove('active');
+  }
+
+  // === ПЕРЕКЛЮЧЕНИЕ СЛАЙДОВ ===
   let currentSlide = 0;
   const slides = document.querySelectorAll('.slide');
   const progress = document.getElementById('progress');
@@ -298,16 +376,11 @@
     slides.forEach((slide, index) => {
       slide.classList.toggle('active', index === currentSlide);
     });
-    
     let percent = ((currentSlide + 1) / slides.length) * 100;
     progress.style.width = percent + '%';
-    
     counter.innerText = `0${currentSlide + 1} / 10`;
     
-    // Запуск анимации цифр на 9-м слайде
-    if (currentSlide === 8) {
-      startCounters();
-    }
+    if (currentSlide === 8) startCounters();
   }
   
   function changeSlide(direction) {
@@ -320,6 +393,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === ' ') changeSlide(1);
     if (e.key === 'ArrowLeft') changeSlide(-1);
+    if (e.key === 'Escape') closeModal();
   });
 
   let touchStartX = 0;
@@ -336,7 +410,6 @@
     counters.forEach(counter => {
       const target = +counter.getAttribute('data-target');
       let count = counter.innerText === '100' ? 100 : 0;
-      
       const updateCount = () => {
         const inc = target > count ? 1 : -1;
         if (Math.abs(target - count) < 5) { counter.innerText = target; return; }
@@ -359,45 +432,33 @@
   window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
   window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
 
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
   window.addEventListener('resize', resize);
   resize();
 
   class Particle {
     constructor() {
-      this.x = Math.random() * W;
-      this.y = Math.random() * H;
-      this.vx = (Math.random() - 0.5) * 1;
-      this.vy = (Math.random() - 0.5) * 1;
+      this.x = Math.random() * W; this.y = Math.random() * H;
+      this.vx = (Math.random() - 0.5) * 1; this.vy = (Math.random() - 0.5) * 1;
       this.size = Math.random() * 2 + 1;
     }
     update() {
       this.x += this.vx; this.y += this.vy;
       if (this.x < 0 || this.x > W) this.vx *= -1;
       if (this.y < 0 || this.y > H) this.vy *= -1;
-
-      // Взаимодействие с мышью
       if (mouse.x != null) {
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
+        let dx = mouse.x - this.x; let dy = mouse.y - this.y;
         let distance = Math.sqrt(dx*dx + dy*dy);
         if (distance < mouse.radius) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
+          const forceDirectionX = dx / distance; const forceDirectionY = dy / distance;
           const force = (mouse.radius - distance) / mouse.radius;
-          this.x -= forceDirectionX * force * 5;
-          this.y -= forceDirectionY * force * 5;
+          this.x -= forceDirectionX * force * 5; this.y -= forceDirectionY * force * 5;
         }
       }
     }
     draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 240, 255, 0.8)';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.8)'; ctx.fill();
     }
   }
 
@@ -405,16 +466,12 @@
 
   function animateBg() {
     ctx.clearRect(0, 0, W, H);
-    
     for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
-      particles[i].draw();
-      
+      particles[i].update(); particles[i].draw();
       for (let j = i; j < particles.length; j++) {
         let dx = particles[i].x - particles[j].x;
         let dy = particles[i].y - particles[j].y;
         let distance = Math.sqrt(dx*dx + dy*dy);
-        
         if (distance < 120) {
           ctx.beginPath();
           ctx.strokeStyle = `rgba(0, 82, 255, ${1 - distance/120})`;
