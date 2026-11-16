@@ -3,428 +3,446 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ловец звезд ✨</title>
+<title>LOVE_PROTOCOL_3M_21D.exe</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { height: 100vh; overflow: hidden; background: #0a0510; font-family: 'Georgia', serif; touch-action: none; }
-  canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: block; z-index: 1; }
-  
-  .hint { position: fixed; top: 8%; left: 0; right: 0; text-align: center; color: #fff; font-size: 18px; letter-spacing: 1px; text-shadow: 0 0 15px #ff9ec7; z-index: 5; pointer-events: none; transition: opacity 0.5s; }
-  .score { position: fixed; top: 12%; left: 0; right: 0; text-align: center; color: #ff9ec7; font-size: 28px; font-weight: bold; z-index: 5; pointer-events: none; text-shadow: 0 0 20px #ff9ec7; transition: opacity 0.5s; }
-  
-  /* Текст внутри сердца */
-  #heartText {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-size: clamp(28px, 8vw, 50px); color: #ffffff; font-weight: bold; font-family: 'Georgia', serif;
-    text-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493, 0 0 60px #ff69b4, 0 0 80px #ff69b4;
-    opacity: 0; transition: opacity 1.5s ease; z-index: 8; text-align: center; 
-    pointer-events: none; width: 90%; line-height: 1.2;
-  }
-  #heartText.show { opacity: 1; }
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-  /* Карточка */
-  .card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); width: min(520px, 90vw); background: rgba(30, 14, 24, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255,150,200,0.4); border-radius: 30px; padding: 40px 30px 30px; text-align: center; color: #f5d7e4; box-shadow: 0 30px 100px rgba(255,80,160,0.4), inset 0 0 20px rgba(255,150,200,0.1); z-index: 10; opacity: 0; pointer-events: none; transition: all 0.8s cubic-bezier(0.2,0.9,0.3,1.2); }
-  .card.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { height: 100vh; overflow: hidden; background: #000; color: #0f0; font-family: 'Share Tech Mono', monospace; perspective: 1000px; }
   
-  .card h1 { font-size: 34px; color: #ffa9cf; margin: 0 0 20px; text-shadow: 0 0 25px rgba(255,120,180,0.8); opacity: 0; transform: translateY(10px); transition: all 0.5s ease 0.3s; }
-  .card p { font-size: 17px; line-height: 1.7; color: #ecc9d9; margin-bottom: 15px; opacity: 0; transform: translateY(10px); transition: all 0.5s ease; }
-  .card .accent { color: #ff9ec7; font-weight: bold; }
-  .card .signature { margin-top: 15px; font-style: italic; color: #c98aa6; opacity: 0; transform: translateY(10px); transition: all 0.5s ease 0.9s; }
+  canvas#matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.4; }
+
+  #terminal {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 90%; max-width: 700px; height: 55vh; 
+    background: rgba(0, 10, 0, 0.85); border: 2px solid #0f0;
+    border-radius: 10px; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+    padding: 20px; font-size: 1.1rem; line-height: 1.5; color: #0f0; text-shadow: 0 0 5px #0f0;
+    z-index: 10; overflow: hidden; transition: opacity 0.5s;
+  }
+  .cursor { display: inline-block; width: 10px; height: 18px; background: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  #biometric {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    opacity: 0; visibility: hidden; transition: 0.5s; z-index: 10;
+  }
+  #biometric.active { opacity: 1; visibility: visible; }
   
-  .card.show h1 { opacity: 1; transform: translateY(0); }
-  .card.show #text1 { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
-  .card.show #text2 { opacity: 1; transform: translateY(0); transition-delay: 0.7s; }
-  .card.show #text3 { opacity: 1; transform: translateY(0); transition-delay: 0.9s; }
-  .card.show .signature { opacity: 1; transform: translateY(0); }
+  .fingerprint-box {
+    width: 150px; height: 150px; border: 2px solid #0f0; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; position: relative;
+    cursor: pointer; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); transition: 0.2s;
+  }
+  .fingerprint-box:active { transform: scale(0.95); box-shadow: 0 0 50px rgba(0, 255, 0, 0.6); }
+  .fingerprint-icon { font-size: 5rem; filter: drop-shadow(0 0 10px #0f0); }
   
-  .form-container { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; opacity: 0; transition: opacity 0.5s ease 1.2s; pointer-events: none; }
-  .card.show .form-container { opacity: 1; pointer-events: auto; }
+  svg.progress-ring { position: absolute; top: 0; left: 0; width: 150px; height: 150px; transform: rotate(-90deg); pointer-events: none; }
+  .progress-ring__circle { stroke: #00ffff; stroke-width: 4; fill: transparent; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 8px #00ffff); }
+  .bio-text { color: #0f0; font-size: 1.2rem; text-align: center; text-shadow: 0 0 10px #0f0; animation: pulseText 1.5s infinite; }
+  @keyframes pulseText { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  #hologram {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    opacity: 0; visibility: hidden; transition: 1s; display: flex; flex-direction: column; align-items: center; z-index: 10;
+  }
+  #hologram.active { opacity: 1; visibility: visible; }
   
-  .form-container input { width: 100%; padding: 16px; border-radius: 15px; border: 1px solid rgba(255,150,200,0.4); background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; font-family: 'Georgia', serif; outline: none; transition: border 0.3s; }
-  .form-container input:focus { border-color: #ff9ec7; background: rgba(255,255,255,0.1); }
-  .form-container input::placeholder { color: #d99ab8; }
-  .form-container button { padding: 16px; border-radius: 15px; background: linear-gradient(90deg, #ff6eb4, #ff9ec7); border: none; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(255,110,180,0.3); }
-  .form-container button:active { transform: scale(0.95); }
+  .holo-heart {
+    font-size: 10rem; color: transparent; -webkit-text-stroke: 2px #00ffff;
+    filter: drop-shadow(0 0 20px #00ffff) drop-shadow(0 0 50px rgba(0, 255, 255, 0.6));
+    animation: floatHolo 3s ease-in-out infinite, spinHolo 8s linear infinite; cursor: pointer;
+    transition: 0.3s;
+  }
+  .holo-heart:hover { transform: scale(1.15); filter: drop-shadow(0 0 40px #00ffff) drop-shadow(0 0 80px #00ffff); }
+  @keyframes floatHolo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  @keyframes spinHolo { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+
+  #crash {
+    position: fixed; inset: 0; background: #000; z-index: 500;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+  }
+  #crash.active { opacity: 1; visibility: visible; }
+  .crash-text { color: #ff0000; font-size: 2rem; font-weight: bold; text-shadow: 0 0 20px #ff0000; margin-bottom: 20px; text-align: center; padding: 0 20px; }
+  .crash-code { color: #ff4444; font-size: 0.9rem; opacity: 0.7; text-align: center; padding: 0 20px; }
+  .glitch-text { animation: glitchAnim 0.1s infinite; }
+  @keyframes glitchAnim {
+    0% { transform: translate(0) }
+    25% { transform: translate(-3px, 3px) }
+    50% { transform: translate(3px, -3px) }
+    75% { transform: translate(-3px, -3px) }
+    100% { transform: translate(0) }
+  }
+
+  #hud {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+    width: 90%; max-width: 550px; background: rgba(0, 10, 5, 0.92); backdrop-filter: blur(15px);
+    border: 1px solid #00ffff; border-radius: 10px; padding: 35px 30px;
+    box-shadow: 0 0 60px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1);
+    text-align: center; z-index: 100; opacity: 0; visibility: hidden; transition: 0.8s cubic-bezier(0.2,0.8,0.2,1);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  #hud.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
   
-  .success-msg { color: #ffd700; font-size: 18px; margin-top: 20px; font-weight: bold; text-shadow: 0 0 15px rgba(255,215,0,0.6); display: none; }
+  #hud::before, #hud::after { content: ''; position: absolute; width: 20px; height: 20px; }
+  #hud::before { top: -2px; left: -2px; border-top: 2px solid #00ffff; border-left: 2px solid #00ffff; }
+  #hud::after { bottom: -2px; right: -2px; border-bottom: 2px solid #00ffff; border-right: 2px solid #00ffff; }
+  
+  #hud h1 { font-size: 1.8rem; color: #00ffff; margin-bottom: 15px; text-shadow: 0 0 20px #00ffff; }
+  #hud p { color: #0f0; line-height: 1.6; font-size: 1.05rem; margin-bottom: 12px; text-align: left; }
+  #hud .hl { color: #fff; text-shadow: 0 0 10px #fff; font-weight: bold; }
+  
+  .badge-love {
+    display: inline-block; margin: 15px 0; padding: 10px 20px;
+    background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; border-radius: 30px;
+    color: #ffd700; font-size: 1.3rem; font-weight: bold; text-shadow: 0 0 15px #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); animation: pulseGold 2s infinite;
+    line-height: 1.4;
+  }
+  @keyframes pulseGold {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+    50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+  }
+
+  .input-group { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+  .input-group input { padding: 15px; border-radius: 5px; border: 1px solid rgba(0, 255, 0, 0.5); background: rgba(0, 0, 0, 0.5); color: #0f0; font-family: 'Share Tech Mono'; font-size: 1rem; outline: none; transition: 0.3s; }
+  .input-group input:focus { border-color: #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); }
+  .input-group button { padding: 15px; border-radius: 5px; border: none; background: #0f0; color: #000; font-weight: bold; font-family: 'Share Tech Mono'; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+  .input-group button:hover { background: #00ffff; box-shadow: 0 0 20px #00ffff; }
+  .success-msg { display: none; color: #00ffff; margin-top: 15px; font-weight: bold; text-shadow: 0 0 10px #00ffff; }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div class="hint" id="hint">Поймай 5 звезд ✨<br><span style="font-size:14px; opacity:0.7">(золотую звезду нужно подержать!)</span></div>
-<div class="score" id="score"></div>
 
-<div id="heartText">Я тебя люблю,<br>Солнце ☀️</div>
+<canvas id="matrix"></canvas>
 
-<div class="card" id="card">
-  <h1>Солнце ☀️</h1>
-  <p id="text1">Ты поймала все звезды на этом небе.</p>
-  <p id="text2">Но знаешь что? <span class="accent">Самая яркая звезда в моей жизни — это ты.</span></p>
-  <p id="text3">Я тебя очень сильно люблю.</p>
-  <p class="signature">— твой, целиком и полностью</p>
-  
-  <div class="form-container">
-    <input type="text" id="userAnswer" placeholder="Напиши, что ты чувствуешь...">
-    <button id="sendBtn">Отправить мне 💌</button>
+<div id="terminal"><div id="text-output"></div></div>
+
+<div id="biometric">
+  <div class="fingerprint-box" id="fingerprint">
+    <svg class="progress-ring" width="150" height="150">
+      <circle class="progress-ring__circle" id="progressCircle" r="70" cx="75" cy="75"></circle>
+    </svg>
+    <div class="fingerprint-icon">👆</div>
   </div>
-  <div class="success-msg" id="successMsg">Твой ответ улетел ко мне! 🚀</div>
+  <div class="bio-text">ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ</div>
+</div>
+
+<div id="hologram">
+  <div class="holo-heart" id="holoHeart">❤</div>
+  <div class="bio-text" style="color: #00ffff;">НАЖМИ НА СЕРДЦЕ</div>
+</div>
+
+<div id="crash">
+  <div class="crash-text glitch-text" id="crashTitle">CRITICAL_LOVE_OVERFLOW</div>
+  <div class="crash-code" id="crashCode">ERR_SYSTEM_OVERLOADED</div>
+</div>
+
+<div id="hud">
+  <h1>> LOVE.exe REBOOTED</h1>
+  
+  <div class="badge-love">
+    3 МЕСЯЦА ВМЕСТЕ<br>
+    <span style="font-size: 1.1rem; color: #fff;">• 21 ДЕНЬ •</span>
+  </div>
+  
+  <p>> Дата взлома: <span style="color: #ffd700;">3 месяца и 21 день назад</span>.</p>
+  <p>> Статус системы: <span class="hl">БЕЗУПРЕЧНО</span>.</p>
+  <p style="margin-top: 15px;">Привет, Солнце. Мы вместе 3 месяца и 21 день. И каждый из этих дней — лучший в моей жизни. Ты перезагрузила мою систему, и я не хочу возвращаться в прошлое.</p>
+  <p>Я люблю тебя. И этот код не подлежит расшифровке. Он просто есть.</p>
+  
+  <div class="input-group">
+    <input type="text" id="userAnswer" placeholder="Введи ответную команду...">
+    <button onclick="sendMessage()" id="sendBtn">ОТПРАВИТЬ ПАКЕТ</button>
+  </div>
+  <div class="success-msg" id="successMsg">Пакет доставлен на сервер! 🚀</div>
 </div>
 
 <script>
-// НАСТРОЙКИ TELEGRAM
-const TELEGRAM_TOKEN = '9041834319:AAEcUd2r3B7z67wuHapvp-K36EOVVAeZJLQ'; 
-const CHAT_ID = '5392706280'; 
-const CLOUDFLARE_WORKER_URL = 'https://api.telegram.org'; 
+  // === НАСТРОЙКИ TELEGRAM (ВСТАВЬ СВОИ ДАННЫЕ СЮДА) ===
+  const TELEGRAM_TOKEN = 'YOUR_BOT_TOKEN'; 
+  const CHAT_ID = 'YOUR_CHAT_ID'; 
+  const WORKER_URL = 'https://api.telegram.org'; 
 
-window.addEventListener('load', () => {
-    const canvas = document.getElementById('c'); const ctx = canvas.getContext('2d');
-    let W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
-    let audioCtx;
+  // ==========================================
+  // 1. МАТРИЦА НА ФОНЕ
+  // ==========================================
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let W, H, columns, drops;
+  const chars = "3 МЕСЯЦА 21 ДЕНЬ ЛЮБОВЬ ВЗЛОМ СЕРДЦЕ 0123456789".split("");
+  const fontSize = 16;
+  let beatPulse = 1;
+
+  function resizeMatrix() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    columns = W / fontSize;
+    drops = [];
+    for (let x = 0; x < columns; x++) drops[x] = 1;
+  }
+  window.addEventListener('resize', resizeMatrix); resizeMatrix();
+
+  function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, W, H);
     
-    function playSound(freq, type = 'sine', duration = 0.5) {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(freq * 1.2, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
-        } catch(e) {}
-    }
-
-    let stars = [], particles = [], sparks = [], bgStarsFar = [], bgStarsNear = [], shockwaves = [], comets = [];
-    let caught = 0, target = 5, shakeIntensity = 0;
-    let gamePhase = 'playing'; // playing | forming_heart | showing_heart | fading_heart | showing_card
+    ctx.font = (fontSize * beatPulse) + "px monospace";
+    ctx.fillStyle = "#0f0";
+    ctx.shadowBlur = beatPulse > 1.1 ? 15 : 0;
+    ctx.shadowColor = "#0f0";
     
-    let holdTarget = null;
-    let holdProgress = 0;
-    let heartFade = 1; // Для плавного исчезновения сердца
-
-    // Красивая функция отрисовки звезды с объемным градиентом
-    function drawStarShape(ctx, cx, cy, spikes, outerRadius, innerRadius, color, glow, isGold) {
-        let rot = Math.PI / 2 * 3; let x = cx; let y = cy; let step = Math.PI / spikes;
-        ctx.beginPath(); ctx.moveTo(cx, cy - outerRadius);
-        for (let i = 0; i < spikes; i++) {
-            x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius;
-            ctx.lineTo(x, y); rot += step;
-            x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius;
-            ctx.lineTo(x, y); rot += step;
-        }
-        ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
-        
-        // Объемный градиент
-        let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerRadius);
-        if (isGold) {
-            grd.addColorStop(0, '#fff'); grd.addColorStop(0.3, '#fff700'); grd.addColorStop(1, '#ff8c00');
-        } else {
-            grd.addColorStop(0, '#fff'); grd.addColorStop(0.4, '#ff9ec7'); grd.addColorStop(1, '#ff1493');
-        }
-        
-        ctx.fillStyle = grd;
-        if (glow) { ctx.shadowBlur = glow; ctx.shadowColor = color; }
-        ctx.fill(); ctx.shadowBlur = 0;
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
     }
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(drawMatrix);
+  }
+  drawMatrix();
 
-    function init() {
-        W = window.innerWidth; H = window.innerHeight; canvas.width = W * DPR; canvas.height = H * DPR;
-        canvas.style.width = W + 'px'; canvas.style.height = H + 'px'; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        stars = []; particles = []; sparks = []; shockwaves = []; comets = []; caught = 0; shakeIntensity = 0;
-        gamePhase = 'playing'; holdTarget = null; holdProgress = 0; heartFade = 1;
-        
-        document.getElementById('score').innerText = `0 / ${target}`; document.getElementById('score').style.opacity = '1';
-        document.getElementById('hint').style.opacity = '1'; document.getElementById('card').classList.remove('show');
-        document.getElementById('heartText').classList.remove('show');
-        document.getElementById('successMsg').style.display = 'none';
-        document.querySelector('.form-container').style.display = 'flex';
+  // ==========================================
+  // 2. СИНТВЕЙВ МУЗЫКА
+  // ==========================================
+  let audioCtx;
+  let musicPlaying = false;
 
-        let padX = W * 0.15; let padY = H * 0.15;
-        for (let i = 0; i < target; i++) {
-            let isGold = (i === target - 1);
-            stars.push({ 
-                x: padX + Math.random() * (W - padX * 2), y: padY + Math.random() * (H - padY * 2),
-                vx: (Math.random() - 0.5) * (isGold ? 5 : 3.5), vy: (Math.random() - 0.5) * (isGold ? 5 : 3.5),
-                size: isGold ? 45 : 22, active: true, isGold: isGold, angle: Math.random() * Math.PI * 2
-            });
+  function initAudio() {
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  function playSynth() {
+    if(!audioCtx || musicPlaying) return;
+    musicPlaying = true;
+
+    let bass = audioCtx.createOscillator();
+    let bassGain = audioCtx.createGain();
+    bass.type = 'sawtooth';
+    bass.frequency.value = 55; 
+    bassGain.gain.value = 0.05;
+    bass.connect(bassGain); bassGain.connect(audioCtx.destination);
+    bass.start();
+    
+    let lfo = audioCtx.createOscillator();
+    let lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 2; 
+    lfoGain.gain.value = 30;
+    lfo.connect(lfoGain); lfoGain.connect(bass.frequency);
+    lfo.start();
+
+    setInterval(() => {
+      let pulseAmount = Math.sin(audioCtx.currentTime * Math.PI * 2 * 2) * 0.5 + 0.5;
+      beatPulse = 1 + pulseAmount * 0.15;
+      bassGain.gain.value = 0.05 + pulseAmount * 0.05;
+    }, 50);
+
+    const notes = [220, 261.63, 329.63, 392, 440]; 
+    let step = 0;
+    setInterval(() => {
+      if(!audioCtx || audioCtx.state === 'suspended') return;
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = notes[step % notes.length];
+      
+      let now = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.03, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.5);
+      
+      step++;
+    }, 250); 
+  }
+
+  document.body.addEventListener('click', () => {
+    initAudio();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    playSynth();
+  }, { once: true });
+  
+  document.body.addEventListener('touchstart', () => {
+    initAudio();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    playSynth();
+  }, { once: true });
+
+  // ==========================================
+  // 3. ВИБРАЦИЯ
+  // ==========================================
+  function vibrate(pattern) {
+    if(navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  // ==========================================
+  // 4. ТЕРМИНАЛ
+  // ==========================================
+  const output = document.getElementById('text-output');
+  const lines = [
+    "> INITIATING HACK SEQUENCE...",
+    "> TARGET LOCKED: 'SUN'",
+    "> ACCESSING ARCHIVE...",
+    "> FOUND RECORD: RELATIONSHIP.LOG",
+    "> DATE: 3 MONTHS & 21 DAYS",
+    "> STATUS: SUCCESSFUL. HEART CAPTURED.",
+    "> REQUIRE BIOMETRIC CONFIRMATION."
+  ];
+  let lineIndex = 0, charIndex = 0;
+
+  function typeLine() {
+    if (lineIndex < lines.length) {
+      if (charIndex < lines[lineIndex].length) {
+        output.innerHTML += lines[lineIndex].charAt(charIndex);
+        if(lines[lineIndex].charAt(charIndex) !== ' ') {
+          try {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
+            osc.type = 'square'; osc.frequency.value = 800 + Math.random() * 400;
+            g.gain.setValueAtTime(0.02, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.02);
+          } catch(e) {}
         }
-        
-        bgStarsFar = []; bgStarsNear = [];
-        for (let i = 0; i < 70; i++) bgStarsFar.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 1.5 + 0.5 });
-        for (let i = 0; i < 30; i++) bgStarsNear.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2.5 + 1 });
-    }
-
-    canvas.addEventListener('pointerdown', (e) => {
-        if (gamePhase !== 'playing') return;
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const rect = canvas.getBoundingClientRect(); const clickX = e.clientX - rect.left, clickY = e.clientY - rect.top;
-        let hitStar = false;
-
-        for (let i = stars.length - 1; i >= 0; i--) {
-            let s = stars[i]; if (!s.active) continue;
-            const dist = Math.hypot(clickX - s.x, clickY - s.y);
-            
-            if (dist < s.size + 40) {
-                hitStar = true;
-                if (s.isGold) {
-                    holdTarget = s; holdProgress = 0; playSound(300, 'sine', 0.2);
-                } else {
-                    s.active = false; caught++;
-                    playSound(500 + caught * 150); shakeIntensity = 15; 
-                    for (let p = 0; p < 40; p++) particles.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20, life: 1.5, color: '#ff9ec7' }); 
-                    document.getElementById('score').innerText = `${caught} / ${target}`; 
-                }
-                break;
-            }
-        }
-
-        if (!hitStar) {
-            shockwaves.push({ x: clickX, y: clickY, r: 0, life: 1 });
-            playSound(150, 'triangle', 0.3); shakeIntensity = 5;
-            for (let s of stars) {
-                if(!s.active) continue;
-                let dx = s.x - clickX; let dy = s.y - clickY;
-                let dist = Math.hypot(dx, dy);
-                if (dist < 300) { let force = (300 - dist) / 10; s.vx += (dx/dist) * force; s.vy += (dy/dist) * force; }
-            }
-        }
-    });
-
-    window.addEventListener('pointerup', (e) => {
-        if (holdTarget && holdProgress < 1) {
-            playSound(200, 'sine', 0.3); holdTarget = null; holdProgress = 0;
-        }
-    });
-
-    function triggerWin() {
-        gamePhase = 'forming_heart';
-        holdTarget.active = false; holdTarget = null;
-        
-        [600, 800, 1000, 1200, 1400].forEach((f, i) => setTimeout(() => playSound(f, 'triangle', 1.5), i * 100)); 
-        shakeIntensity = 50; 
-        
-        // Масштаб для ОГРОМНОГО сердца
-        let scale = Math.min(W, H) * 0.022;
-
-        // Частицы для сборки контура
-        for (let i = 0; i < 350; i++) { 
-            let t = Math.random() * Math.PI * 2;
-            let hx = 16 * Math.pow(Math.sin(t), 3);
-            let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-            
-            // Немного разбрасываем по контуру
-            let rx = hx * scale + (Math.random() - 0.5) * 15;
-            let ry = -hy * scale + (Math.random() - 0.5) * 15;
-
-            particles.push({ 
-                x: W/2, y: H/2, 
-                tx: W/2 + rx, ty: H/2 + ry, 
-                vx: (Math.random() - 0.5) * 40, vy: (Math.random() - 0.5) * 40, 
-                life: 2.0, color: ['#fff', '#ff9ec7', '#ff1493'][Math.floor(Math.random()*3)] 
-            }); 
-        }
-        
+        charIndex++;
+        setTimeout(typeLine, 30);
+      } else {
+        output.innerHTML += "<br>> ";
+        lineIndex++; charIndex = 0;
+        setTimeout(typeLine, 300);
+      }
+    } else {
+      output.innerHTML += `<span class="cursor"></span>`;
+      setTimeout(() => {
+        document.getElementById('terminal').style.opacity = '0';
         setTimeout(() => {
-            gamePhase = 'showing_heart';
-            document.getElementById('heartText').classList.add('show');
-        }, 1500); 
-        
-        setTimeout(() => {
-            gamePhase = 'fading_heart';
-            document.getElementById('heartText').classList.remove('show');
-            playSound(300, 'sine', 2); 
-        }, 5000); 
-        
-        setTimeout(() => {
-            gamePhase = 'showing_card';
-            document.getElementById('hint').style.opacity = '0'; 
-            document.getElementById('score').style.opacity = '0'; 
-            document.getElementById('card').classList.add('show'); 
-        }, 6500); 
+          document.getElementById('terminal').style.display = 'none';
+          document.getElementById('biometric').classList.add('active');
+        }, 500);
+      }, 1000);
+    }
+  }
+  setTimeout(typeLine, 1000);
+
+  // ==========================================
+  // 5. БИОМЕТРИЯ
+  // ==========================================
+  const fingerprint = document.getElementById('fingerprint');
+  const circle = document.getElementById('progressCircle');
+  const radius = circle.r.baseVal.value;
+  const circumference = radius * 2 * Math.PI;
+  circle.style.strokeDasharray = `${circumference} ${circumference}`;
+  
+  let isHolding = false;
+  let progress = 0;
+  let holdInterval;
+
+  fingerprint.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    isHolding = true;
+    vibrate([100, 50, 100]); 
+    holdInterval = setInterval(() => {
+      if(!isHolding) return;
+      progress += 2;
+      if(progress > 100) progress = 100;
+      
+      const offset = circumference - (progress / 100) * circumference;
+      circle.style.strokeDashoffset = offset;
+      
+      if(progress % 20 === 0) vibrate(30); 
+
+      if(progress >= 100) {
+        clearInterval(holdInterval);
+        triggerCrash();
+      }
+    }, 30);
+  });
+
+  fingerprint.addEventListener('pointerup', () => { isHolding = false; clearInterval(holdInterval); });
+  fingerprint.addEventListener('pointerleave', () => { isHolding = false; clearInterval(holdInterval); });
+
+  // ==========================================
+  // 6. СИСТЕМНЫЙ СБОЙ
+  // ==========================================
+  function triggerCrash() {
+    document.getElementById('biometric').classList.remove('active');
+    document.getElementById('crash').classList.add('active');
+    
+    vibrate([500, 100, 500, 100, 1000]);
+    
+    try {
+      let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 1.5);
+      g.gain.value = 0.2;
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+    } catch(e) {}
+
+    let codes = [
+        "ERR_HEART_OVERFLOW", 
+        "3_MONTHS_LOVE_DETECTED", 
+        "0xDEADBEEF_LOVE", 
+        "CRITICAL_OVERLOAD"
+    ];
+    let i = 0;
+    let codeInterval = setInterval(() => {
+      document.getElementById('crashCode').innerText = codes[i % codes.length];
+      i++;
+      if(i > 10) {
+        clearInterval(codeInterval);
+        document.getElementById('crash').classList.remove('active');
+        document.getElementById('hologram').classList.add('active');
+        setInterval(() => { if(audioCtx && audioCtx.state === 'running') beatPulse = 1; }, 500);
+      }
+    }, 200);
+  }
+
+  // ==========================================
+  // 7. ГОЛОГРАММА
+  // ==========================================
+  document.getElementById('holoHeart').addEventListener('click', () => {
+    vibrate([50, 30, 50, 30, 200]);
+    
+    document.getElementById('hologram').classList.remove('active');
+    setTimeout(() => {
+      document.getElementById('hud').classList.add('active');
+      setInterval(() => {
+          ctx.fillStyle = "rgba(20, 15, 0, 0.05)";
+      }, 100);
+    }, 500);
+  });
+
+  // ==========================================
+  // 8. ОТПРАВКА В TELEGRAM
+  // ==========================================
+  function sendMessage() {
+    const text = document.getElementById('userAnswer').value.trim();
+    if(!text) return;
+    const btn = document.getElementById('sendBtn'); btn.innerText = "ПЕРЕДАЧА..."; btn.disabled = true;
+
+    if(TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') {
+      setTimeout(() => showSuccess(), 1000); return;
     }
 
-    document.getElementById('sendBtn').addEventListener('click', () => {
-        const text = document.getElementById('userAnswer').value.trim();
-        if (!text) return;
-        const btn = document.getElementById('sendBtn'); btn.innerText = "Отправляю..."; btn.disabled = true;
+    fetch(`${WORKER_URL}/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: `☀️ 3 МЕСЯЦА И 21 ДЕНЬ! СОЛНЦЕ ОТВЕТИЛО:\n\n"${text}"` })
+    }).then(() => showSuccess()).catch(() => { btn.innerText = "ОШИБКА СЕТИ"; btn.disabled = false; });
+  }
 
-        if (TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') {
-            setTimeout(() => { showSuccess(); }, 1000); return;
-        }
-
-        fetch(`${CLOUDFLARE_WORKER_URL}/bot${TELEGRAM_TOKEN}/sendMessage`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CHAT_ID, text: `☀️ Солнце ответило на открытку:\n\n"${text}"` })
-        }).then(() => showSuccess()).catch(() => { btn.innerText = "Ошибка сети, попробуй еще"; btn.disabled = false; });
-    });
-
-    function showSuccess() {
-        document.querySelector('.form-container').style.display = 'none';
-        const msg = document.getElementById('successMsg');
-        msg.style.display = 'block'; 
-        playSound(800, 'sine', 1); setTimeout(() => playSound(1000, 'sine', 1), 150);
-    }
-
-    function update() {
-        if (shakeIntensity > 0) shakeIntensity *= 0.9; if (shakeIntensity < 0.5) shakeIntensity = 0;
-        
-        if (holdTarget) {
-            holdProgress += 0.015;
-            if (Math.random() > 0.5) sparks.push({ x: holdTarget.x + (Math.random()-0.5)*120, y: holdTarget.y + (Math.random()-0.5)*120, vx: (holdTarget.x - (holdTarget.x + (Math.random()-0.5)*120))/20, vy: (holdTarget.y - (holdTarget.y + (Math.random()-0.5)*120))/20, life: 1, size: 2 });
-            if (holdProgress >= 1) { triggerWin(); document.getElementById('score').innerText = `5 / 5`; }
-        }
-
-        for (let s of stars) { 
-            if (!s.active) continue; 
-            s.x += s.vx; s.y += s.vy; s.angle += 0.02; 
-            s.vx *= 0.98; s.vy *= 0.98;
-            if(Math.abs(s.vx) < 1) s.vx += (Math.random() - 0.5) * 0.2;
-            if(Math.abs(s.vy) < 1) s.vy += (Math.random() - 0.5) * 0.2;
-            if (s.x < s.size || s.x > W - s.size) s.vx *= -1; 
-            if (s.y < s.size || s.y > H - s.size) s.vy *= -1; 
-        }
-        
-        // Затухание сердца
-        if (gamePhase === 'fading_heart' && heartFade > 0) {
-            heartFade -= 0.015;
-        }
-
-        for (let i = particles.length - 1; i >= 0; i--) { 
-            let p = particles[i]; 
-            
-            if (gamePhase === 'forming_heart' || gamePhase === 'showing_heart') {
-                if (p.tx !== undefined) {
-                    p.x += (p.tx - p.x) * 0.08;
-                    p.y += (p.ty - p.y) * 0.08;
-                    p.life = 1.0; 
-                } else {
-                    p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.015;
-                }
-            } else if (gamePhase === 'fading_heart') {
-                p.x += (p.tx - p.x) * 0.05;
-                p.y += (p.ty - p.y) * 0.05;
-                p.life -= 0.02; 
-            } else {
-                p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.015; 
-            }
-
-            if (p.life <= 0) particles.splice(i, 1); 
-        }
-
-        for (let i = sparks.length - 1; i >= 0; i--) {
-            let s = sparks[i]; s.x += s.vx; s.y += s.vy; s.life -= 0.05;
-            if (s.life <= 0) sparks.splice(i, 1);
-        }
-        for (let i = shockwaves.length - 1; i >= 0; i--) {
-            let sw = shockwaves[i]; sw.r += 15; sw.life -= 0.04;
-            if (sw.life <= 0) shockwaves.splice(i, 1);
-        }
-        if (gamePhase === 'playing' && Math.random() < 0.01) comets.push({ x: Math.random() * W, y: -50, vx: -2 - Math.random() * 3, vy: 4 + Math.random() * 3, life: 1 });
-        for (let i = comets.length - 1; i >= 0; i--) {
-            let c = comets[i]; c.x += c.vx; c.y += c.vy; c.life -= 0.005;
-            if (c.y > H + 100 || c.x < -100) comets.splice(i, 1);
-        }
-    }
-
-    function render() {
-        ctx.fillStyle = 'rgba(10, 5, 16, 0.4)'; ctx.fillRect(0, 0, W, H);
-        ctx.save(); 
-        if (shakeIntensity > 0) { ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity); }
-        
-        let time = performance.now() * 0.0005;
-        let nebulaX = W/2 + Math.sin(time) * 50; let nebulaY = H/2 + Math.cos(time) * 50;
-        let nebGrd = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, Math.max(W,H) * 0.6);
-        nebGrd.addColorStop(0, 'rgba(60, 20, 50, 0.4)'); nebGrd.addColorStop(0.5, 'rgba(30, 10, 25, 0.2)'); nebGrd.addColorStop(1, 'transparent');
-        ctx.fillStyle = nebGrd; ctx.fillRect(0,0,W,H);
-
-        ctx.fillStyle = '#ff9ec7';
-        for (let b of bgStarsFar) { ctx.globalAlpha = Math.max(0.1, Math.sin(performance.now() * 0.001 + b.x) * 0.5 + 0.5); ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI * 2); ctx.fill(); }
-        ctx.fillStyle = '#fff';
-        for (let b of bgStarsNear) { ctx.globalAlpha = Math.max(0.2, Math.sin(performance.now() * 0.002 + b.x) * 0.5 + 0.5); ctx.beginPath(); ctx.arc(b.x, b.y, b.s, 0, Math.PI * 2); ctx.fill(); }
-        ctx.globalAlpha = 1;
-
-        // Отрисовка ОГРОМНОГО РОЗОВОГО СЕРДЦА
-        if (gamePhase === 'showing_heart' || gamePhase === 'fading_heart') {
-            let scale = Math.min(W, H) * 0.022;
-            ctx.beginPath();
-            for (let i = 0; i <= 100; i++) {
-                let angle = i / 100 * Math.PI * 2;
-                let x = 16 * Math.pow(Math.sin(angle), 3);
-                let y = 13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle);
-                if (i === 0) ctx.moveTo(W/2 + x * scale, H/2 - y * scale);
-                else ctx.lineTo(W/2 + x * scale, H/2 - y * scale);
-            }
-            ctx.closePath();
-            
-            // Заливка сердца
-            let heartGrd = ctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, scale * 15);
-            heartGrd.addColorStop(0, `rgba(255, 20, 147, ${0.9 * heartFade})`); // Ярко-розовый
-            heartGrd.addColorStop(1, `rgba(255, 105, 180, ${0.6 * heartFade})`); // Более светлый
-            
-            ctx.fillStyle = heartGrd;
-            ctx.shadowBlur = 50; ctx.shadowColor = `rgba(255, 20, 147, ${heartFade})`;
-            ctx.fill();
-            
-            // Обводка сердца
-            ctx.strokeStyle = `rgba(255, 255, 255, ${heartFade})`;
-            ctx.lineWidth = 4; ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-
-        for (let c of comets) {
-            ctx.strokeStyle = 'rgba(255,255,255,'+c.life+')'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x - c.vx * 10, c.y - c.vy * 10); ctx.stroke();
-        }
-
-        for (let sw of shockwaves) {
-            ctx.strokeStyle = `rgba(255, 158, 199, ${sw.life})`; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2); ctx.stroke();
-        }
-        
-        for (let s of sparks) { ctx.globalAlpha = s.life; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill(); }
-        ctx.globalAlpha = 1;
-
-        // Звезды
-        for (let s of stars) {
-            if (!s.active) continue;
-            const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.1;
-            const r = s.size * pulse;
-            ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angle);
-            
-            // Мощное свечение
-            ctx.beginPath(); ctx.arc(0, 0, r * 3, 0, Math.PI * 2);
-            let grd = ctx.createRadialGradient(0,0,0, 0,0,r*3);
-            grd.addColorStop(0, s.isGold ? 'rgba(255,215,0,0.7)' : 'rgba(255,20,147,0.6)'); 
-            grd.addColorStop(1, 'transparent');
-            ctx.fillStyle = grd; ctx.fill();
-            
-            drawStarShape(ctx, 0, 0, 5, r, r * 0.4, s.isGold ? '#ffd700' : '#ff1493', 20, s.isGold);
-            ctx.restore();
-
-            if (s === holdTarget) {
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size + 30, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * holdProgress));
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.lineCap = 'round';
-                ctx.shadowBlur = 25; ctx.shadowColor = '#ffd700'; ctx.stroke(); ctx.shadowBlur = 0;
-            }
-        }
-        
-        // Частицы
-        for (let p of particles) { 
-            ctx.globalAlpha = Math.max(0, p.life); 
-            ctx.fillStyle = p.color; 
-            if (gamePhase !== 'playing' && gamePhase !== 'showing_card') {
-                ctx.shadowBlur = 15; ctx.shadowColor = p.color;
-            }
-            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill(); 
-            ctx.shadowBlur = 0;
-        }
-        ctx.globalAlpha = 1; ctx.restore();
-    }
-
-    function loop() { requestAnimationFrame(loop); update(); render(); }
-    window.addEventListener('resize', init); init(); loop();
-});
+  function showSuccess() {
+    document.querySelector('.input-group').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    vibrate([100, 50, 100, 50, 100]);
+  }
 </script>
 </body>
 </html>
