@@ -148,7 +148,7 @@
 </div>
 
 <div id="crash">
-  <div class="crash-text glitch-text" id="crashTitle">CRITICAL_ERROR</div>
+  <div class="crash-text glitch-text" id="crashTitle">КРИТИЧЕСКАЯ ОШИБКА</div>
   <div class="crash-code" id="crashCode">ERR_SYSTEM_OVERLOADED</div>
 </div>
 
@@ -162,7 +162,7 @@
   
   <p id="type-p1"></p>
   <p id="type-p2"></p>
-  <p id="type-p3" style="font-size: 0.85rem; line-height: 1.4;"></p>
+  <p id="type-p3" style="font-size: 0.85rem; line-height: 1.5;"></p>
   
   <div class="input-group">
     <input type="text" id="userAnswer" placeholder="Введи ответную команду...">
@@ -177,9 +177,6 @@
   const CHAT_ID = '5392706280'; 
   const WORKER_URL = 'https://api.telegram.org'; 
 
-  // ==========================================
-  // 1. МАТРИЦА НА ФОНЕ
-  // ==========================================
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
   let W, H, columns, drops;
@@ -199,12 +196,10 @@
   function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, W, H);
-    
     ctx.font = (fontSize * beatPulse) + "px monospace";
     ctx.fillStyle = "#0f0";
     ctx.shadowBlur = beatPulse > 1.1 ? 15 : 0;
     ctx.shadowColor = "#0f0";
-    
     for (let i = 0; i < drops.length; i++) {
       const text = chars[Math.floor(Math.random() * chars.length)];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -216,9 +211,6 @@
   }
   drawMatrix();
 
-  // ==========================================
-  // 2. СИНТВЕЙВ МУЗЫКА
-  // ==========================================
   let audioCtx;
   let musicPlaying = false;
 
@@ -230,64 +222,44 @@
   function playSynth() {
     if(!audioCtx || musicPlaying) return;
     musicPlaying = true;
-
     let bass = audioCtx.createOscillator();
     let bassGain = audioCtx.createGain();
-    bass.type = 'sawtooth';
-    bass.frequency.value = 55; 
-    bassGain.gain.value = 0.05;
-    bass.connect(bassGain); bassGain.connect(audioCtx.destination);
-    bass.start();
-    
-    let lfo = audioCtx.createOscillator();
-    let lfoGain = audioCtx.createGain();
-    lfo.frequency.value = 2; 
-    lfoGain.gain.value = 30;
-    lfo.connect(lfoGain); lfoGain.connect(bass.frequency);
-    lfo.start();
-
+    bass.type = 'sawtooth'; bass.frequency.value = 55; bassGain.gain.value = 0.05;
+    bass.connect(bassGain); bassGain.connect(audioCtx.destination); bass.start();
+    let lfo = audioCtx.createOscillator(); let lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 2; lfoGain.gain.value = 30;
+    lfo.connect(lfoGain); lfoGain.connect(bass.frequency); lfo.start();
     setInterval(() => {
       let pulseAmount = Math.sin(audioCtx.currentTime * Math.PI * 2 * 2) * 0.5 + 0.5;
       beatPulse = 1 + pulseAmount * 0.15;
       bassGain.gain.value = 0.05 + pulseAmount * 0.05;
     }, 50);
-
-    const notes = [220, 261.63, 329.63, 392, 440]; 
-    let step = 0;
+    const notes = [220, 261.63, 329.63, 392, 440]; let step = 0;
     setInterval(() => {
       if(!audioCtx || audioCtx.state === 'suspended') return;
-      let osc = audioCtx.createOscillator();
-      let gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = notes[step % notes.length];
-      
+      let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+      osc.type = 'triangle'; osc.frequency.value = notes[step % notes.length];
       let now = audioCtx.currentTime;
       gain.gain.setValueAtTime(0, now);
       gain.gain.linearRampToValueAtTime(0.03, now + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      
       osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 0.5);
-      
-      step++;
+      osc.start(now); osc.stop(now + 0.5); step++;
     }, 250); 
   }
 
   document.body.addEventListener('click', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
   document.body.addEventListener('touchstart', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
 
-  // ==========================================
-  // 3. ТЕРМИНАЛ (НАЧАЛЬНЫЙ ЭКРАН)
-  // ==========================================
   const output = document.getElementById('text-output');
   const lines = [
-    "> INITIATING HACK SEQUENCE...",
-    "> TARGET LOCKED: 'SUN'",
-    "> ACCESSING ARCHIVE...",
-    "> FOUND RECORD: RELATIONSHIP.LOG",
-    "> DATE: 3 MONTHS & 21 DAYS",
-    "> STATUS: SUCCESSFUL. HEART CAPTURED.",
-    "> REQUIRE BIOMETRIC CONFIRMATION."
+    "> ИНИЦИАЛИЗАЦИЯ ВЗЛОМА...",
+    "> ЦЕЛЬ ЗАХВАЧЕНА: 'SUN'",
+    "> ДОСТУП К АРХИВАМ...",
+    "> НАЙДЕНА ЗАПИСЬ: RELATIONSHIP.LOG",
+    "> ДАТА: 3 МЕСЯЦА 21 ДЕНЬ",
+    "> СТАТУС: УСПЕШНО. СЕРДЦЕ ЗАХВАЧЕНО.",
+    "> ТРЕБУЕТСЯ БИОМЕТРИЯ."
   ];
   let lineIndex = 0, charIndex = 0;
 
@@ -306,12 +278,10 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.02);
           } catch(e) {}
         }
-        charIndex++;
-        setTimeout(typeLine, 40); // Скорость печати в терминале
+        charIndex++; setTimeout(typeLine, 40);
       } else {
         output.innerHTML += "<br>> ";
-        lineIndex++; charIndex = 0;
-        setTimeout(typeLine, 300);
+        lineIndex++; charIndex = 0; setTimeout(typeLine, 300);
       }
     } else {
       output.innerHTML += `<span class="cursor"></span>`;
@@ -326,49 +296,31 @@
   }
   setTimeout(typeLine, 1000);
 
-  // ==========================================
-  // 4. БИОМЕТРИЯ
-  // ==========================================
   const fingerprint = document.getElementById('fingerprint');
   const circle = document.getElementById('progressCircle');
   const bioText = document.getElementById('bioText');
   const radius = circle.r.baseVal.value;
   const circumference = radius * 2 * Math.PI;
   circle.style.strokeDasharray = `${circumference} ${circumference}`;
-  
-  let isHolding = false;
-  let progress = 0;
-  let holdInterval;
+  let isHolding = false; let progress = 0; let holdInterval;
 
   const scanPhrases = [
-    { p: 20, text: "АНАЛИЗ ДНК..." },
-    { p: 50, text: "СКАНИРОВАНИЕ ПАМЯТИ..." },
-    { p: 80, text: "УРОВЕНЬ ЛЮБВИ: 99%..." },
-    { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ!" }
+    { p: 20, text: "АНАЛИЗ ДНК..." }, { p: 50, text: "СКАНИРОВАНИЕ ПАМЯТИ..." },
+    { p: 80, text: "УРОВЕНЬ ЛЮБВИ: 99%..." }, { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ!" }
   ];
 
   fingerprint.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    isHolding = true;
+    e.preventDefault(); isHolding = true;
     if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
     holdInterval = setInterval(() => {
       if(!isHolding) return;
-      progress += 2;
-      if(progress > 100) progress = 100;
-      
-      const offset = circumference - (progress / 100) * circumference;
-      circle.style.strokeDashoffset = offset;
-      
+      progress += 2; if(progress > 100) progress = 100;
+      circle.style.strokeDashoffset = circumference - (progress / 100) * circumference;
       let phrase = scanPhrases.find(ph => progress < ph.p);
       if(phrase) { bioText.innerText = phrase.text; bioText.classList.remove('alert'); }
       if(progress >= 80) bioText.classList.add('alert');
-
       if(progress % 20 === 0 && navigator.vibrate) navigator.vibrate(30); 
-
-      if(progress >= 100) {
-        clearInterval(holdInterval);
-        triggerCrash();
-      }
+      if(progress >= 100) { clearInterval(holdInterval); triggerCrash(); }
     }, 30);
   });
 
@@ -381,25 +333,18 @@
       if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
   });
 
-  // ==========================================
-  // 5. СИСТЕМНЫЙ СБОЙ
-  // ==========================================
   function triggerCrash() {
     document.getElementById('biometric').classList.remove('active');
     document.getElementById('crash').classList.add('active');
-    
     if(navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 1000]);
-    
     try {
       let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
       osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 1.5);
-      g.gain.value = 0.2;
-      osc.connect(g); g.connect(audioCtx.destination);
+      g.gain.value = 0.2; osc.connect(g); g.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + 1.5);
     } catch(e) {}
-
-    let codes = ["ERR_HEART_OVERFLOW", "5_YEARS_LOVE_DETECTED", "0xDEADBEEF_LOVE", "CRITICAL_OVERLOAD"];
+    let codes = ["ERR_HEART_OVERFLOW", "LOVE_DETECTED", "0xDEADBEEF", "CRITICAL_OVERLOAD"];
     let i = 0;
     let codeInterval = setInterval(() => {
       document.getElementById('crashCode').innerText = codes[i % codes.length];
@@ -413,12 +358,8 @@
     }, 200);
   }
 
-  // ==========================================
-  // 6. ГОЛОГРАММА И ЗАПУСК ПЕЧАТИ
-  // ==========================================
   document.getElementById('holoHeart').addEventListener('click', () => {
     if(navigator.vibrate) navigator.vibrate([50, 30, 50, 30, 200]);
-    
     document.getElementById('hologram').classList.remove('active');
     setTimeout(() => {
       document.getElementById('hud').classList.add('active');
@@ -428,16 +369,16 @@
   });
 
   // ==========================================
-  // 7. ПЕЧАТЬ ЛОГА В ПИСЬМЕ (ХАРДКОР)
+  // РУССКИЙ ХАКЕРСКИЙ ТЕКСТ
   // ==========================================
   function startTypewriter() {
-    const p1 = "> DATE_OF_BREACH: 3_MONTHS_21_DAYS_AGO.";
-    const p2 = "> SYSTEM_STATUS: IMPECCABLE.";
-    const p3 = "CONNECTION_ESTABLISHED. DUMPING LOVE.sys LOG:<br><br>" +
-               "> [5_YEARS_AGO] INITIAL_PING. UNKNOWN_IP_DETECTED. PORT_SCAN_REVEALED_ANOMALY. TEST_PACKET_SENT. STATUS: STANDBY.<br><br>" +
-               "> [3_YEARS_AGO] CRITICAL_FAILURE. FIREWALL_BREACHED. ZERO-DAY_EXPLOIT_FOUND (FEELINGS). BRUTE-FORCE_ATTACK_ON_CORE. KERNEL_PANIC. REWRITING heart.dll. ROOT_ACCESS_GRANTED. STATUS: INFECTED.<br><br>" +
-               "> [3_MONTHS_21_DAYS_AGO] SSH_HANDSHAKE_SUCCESSFUL. LEGACY_PROTOCOLS_DELETED. DATABASE_MERGED. SUPERUSER_RIGHTS_ASSIGNED. STATUS: FULL_CONTROL.<br><br>" +
-               "> [CURRENT_STATUS] HEARTBEAT_MONITORING_24/7. DDoS_ATTACK (LOVE). DEDICATED_SERVER_ALLOCATED. ROLLBACK_IMPOSSIBLE. SYSTEM_ENCRYPTED_FOREVER. I_LOVE_YOU.";
+    const p1 = "> ДАТА_ВЗЛОМА: 3_МЕСЯЦА_21_ДЕНЬ_НАЗАД.";
+    const p2 = "> СТАТУС_СИСТЕМЫ: БЕЗУПРЕЧНО.";
+    const p3 = "СОЕДИНЕНИЕ УСТАНОВЛЕНО. ВЫГРУЗКА ЛОГА LOVE.sys:<br><br>" +
+               "> [5_ЛЕТ_НАЗАД] ПЕРВИЧНЫЙ_ПИНГ. ОБНАРУЖЕН_НЕИЗВЕСТНЫЙ_IP. СКАНИРОВАНИЕ_ПОРТОВ_ВЫЯВИЛО_АНОМАЛИЮ. ОТПРАВЛЕН_ТЕСТОВЫЙ_ПАКЕТ. СТАТУС: ОЖИДАНИЕ.<br><br>" +
+               "> [3_ГОДА_НАЗАД] КРИТИЧЕСКИЙ_СБОЙ. БРАНДМАУЭР_ВЗЛОМАН. ОБНАРУЖЕНА_ZERO-DAY_УЯЗВИМОСТЬ (ЧУВСТВА). БРУТФОРС-АТАКА_НА_ЯДРО. KERNEL_PANIC. ПЕРЕЗАПИСЬ_ФАЙЛА heart.dll. ROOT-ДОСТУП_ПОЛУЧЕН. СТАТУС: ЗАРАЖЕН.<br><br>" +
+               "> [3_МЕСЯЦА_21_ДЕНЬ_НАЗАД] УСПЕШНЫЙ_SSH-ХЕНДШЕЙК. ВЕРИФИКАЦИЯ_КЛЮЧЕЙ_ПРОЙДЕНА. ЛЕГАСИ-ПРОТОКОЛЫ_УДАЛЕНЫ. СЛИЯНИЕ_БАЗ_ДАННЫХ. ПРАВА_SUPERUSER_ПРИСВОЕНЫ. СТАТУС: ПОЛНЫЙ_КОНТРОЛЬ.<br><br>" +
+               "> [ТЕКУЩИЙ_СТАТУС] МОНИТОРИНГ_HEARTBEAT_24/7. DDoS-АТАКА (ЛЮБОВЬ). ВЫДЕЛЕН_ОТДЕЛЬНЫЙ_СЕРВЕР. ОТКАТ_НЕВОЗМОЖЕН. СИСТЕМА_ЗАШИФРОВАНА_НАВСЕГДА. Я_ТЕБЯ_ЛЮБЛЮ.";
     
     let el1 = document.getElementById('type-p1');
     let el2 = document.getElementById('type-p2');
@@ -445,89 +386,48 @@
     
     let i = 0, k = 0;
     
-    // Печать первой строки
     function type1() { 
-        if(i < p1.length) { 
-            el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 20); 
-        } else { 
-            el2.innerHTML = p2.replace("IMPECCABLE", "<span class='hl'>IMPECCABLE</span>"); 
-            type3(); 
-        } 
+        if(i < p1.length) { el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 20); } 
+        else { el2.innerHTML = p2.replace("БЕЗУПРЕЧНО", "<span class='hl'>БЕЗУПРЕЧНО</span>"); type3(); } 
     }
     
-    // Печать основного лога (быстро, чтобы не заставлять ждать)
     function type3() { 
         if(k < p3.length) { 
-            if(p3.substring(k, k+4) === "<br>") {
-                el3.innerHTML += "<br>"; k += 4;
-            } else {
-                el3.innerHTML += p3.charAt(k); k++; 
-            }
-            setTimeout(type3, 10); // 10 мс - очень быстро
+            if(p3.substring(k, k+4) === "<br>") { el3.innerHTML += "<br>"; k += 4; } 
+            else { el3.innerHTML += p3.charAt(k); k++; }
+            setTimeout(type3, 10); 
         } 
     }
-    
     type1();
   }
 
-  // ==========================================
-  // 8. ВЗРЫВ БИНАРНОГО КОДА ПРИ ОТПРАВКЕ
-  // ==========================================
   function binaryExplosion() {
     let expCanvas = document.getElementById('explosion');
     let expCtx = expCanvas.getContext('2d');
-    expCanvas.width = window.innerWidth;
-    expCanvas.height = window.innerHeight;
+    expCanvas.width = window.innerWidth; expCanvas.height = window.innerHeight;
     expCanvas.style.opacity = '1';
-    
     let parts = [];
     for(let i=0; i<200; i++) {
-        parts.push({
-            x: window.innerWidth / 2,
-            y: window.innerHeight / 2,
-            vx: (Math.random() - 0.5) * 20,
-            vy: (Math.random() - 0.5) * 20,
-            text: Math.random() > 0.5 ? '1' : '0',
-            life: 1
-        });
+        parts.push({ x: window.innerWidth / 2, y: window.innerHeight / 2, vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20, text: Math.random() > 0.5 ? '1' : '0', life: 1 });
     }
-    
     function animExp() {
-        expCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        expCtx.fillRect(0, 0, expCanvas.width, expCanvas.height);
-        expCtx.fillStyle = '#00ffff';
-        expCtx.font = '14px monospace';
-        
+        expCtx.fillStyle = 'rgba(0, 0, 0, 0.1)'; expCtx.fillRect(0, 0, expCanvas.width, expCanvas.height);
+        expCtx.fillStyle = '#00ffff'; expCtx.font = '14px monospace';
         parts.forEach(p => {
-            p.x += p.vx; p.y += p.vy;
-            p.vx *= 0.97; p.vy *= 0.97;
-            p.life -= 0.015;
-            if(p.life > 0) {
-                expCtx.globalAlpha = p.life;
-                expCtx.fillText(p.text, p.x, p.y);
-            }
+            p.x += p.vx; p.y += p.vy; p.vx *= 0.97; p.vy *= 0.97; p.life -= 0.015;
+            if(p.life > 0) { expCtx.globalAlpha = p.life; expCtx.fillText(p.text, p.x, p.y); }
         });
-        
-        if(parts.some(p => p.life > 0)) requestAnimationFrame(animExp);
-        else expCanvas.style.opacity = '0';
+        if(parts.some(p => p.life > 0)) requestAnimationFrame(animExp); else expCanvas.style.opacity = '0';
     }
     animExp();
   }
 
-  // ==========================================
-  // 9. ОТПРАВКА В TELEGRAM
-  // ==========================================
   function sendMessage() {
     const text = document.getElementById('userAnswer').value.trim();
     if(!text) return;
     const btn = document.getElementById('sendBtn'); btn.innerText = "ПЕРЕДАЧА..."; btn.disabled = true;
-
-    binaryExplosion(); // Запускаем взрыв из нулей и единиц
-
-    if(TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') {
-      setTimeout(() => showSuccess(), 1500); return;
-    }
-
+    binaryExplosion();
+    if(TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') { setTimeout(() => showSuccess(), 1500); return; }
     fetch(`${WORKER_URL}/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: CHAT_ID, text: `☀️ 3 МЕСЯЦА И 21 ДЕНЬ! СОЛНЦЕ ОТВЕТИЛО:\n\n"${text}"` })
