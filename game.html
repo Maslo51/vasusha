@@ -11,7 +11,9 @@
   body { height: 100vh; overflow: hidden; background: #000; color: #0f0; font-family: 'Share Tech Mono', monospace; perspective: 1000px; }
   
   canvas#matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.4; }
+  canvas#explosion { position: fixed; inset: 0; z-index: 200; pointer-events: none; opacity: 0; }
 
+  /* ===== ТЕРМИНАЛ ===== */
   #terminal {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 90%; max-width: 700px; height: 55vh; 
@@ -23,6 +25,7 @@
   .cursor { display: inline-block; width: 10px; height: 18px; background: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom; }
   @keyframes blink { 50% { opacity: 0; } }
 
+  /* ===== БИОМЕТРИЯ ===== */
   #biometric {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     display: flex; flex-direction: column; align-items: center; gap: 20px;
@@ -40,9 +43,12 @@
   
   svg.progress-ring { position: absolute; top: 0; left: 0; width: 150px; height: 150px; transform: rotate(-90deg); pointer-events: none; }
   .progress-ring__circle { stroke: #00ffff; stroke-width: 4; fill: transparent; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 8px #00ffff); }
-  .bio-text { color: #0f0; font-size: 1.2rem; text-align: center; text-shadow: 0 0 10px #0f0; animation: pulseText 1.5s infinite; }
-  @keyframes pulseText { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+  
+  .bio-text { color: #0f0; font-size: 1.1rem; text-align: center; text-shadow: 0 0 10px #0f0; height: 25px; }
+  .bio-text.alert { color: #ff0000; text-shadow: 0 0 10px #ff0000; font-weight: bold; animation: pulseRed 0.5s infinite; }
+  @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+  /* ===== ГОЛОГРАММА ===== */
   #hologram {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     opacity: 0; visibility: hidden; transition: 1s; display: flex; flex-direction: column; align-items: center; z-index: 10;
@@ -59,6 +65,7 @@
   @keyframes floatHolo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
   @keyframes spinHolo { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
 
+  /* ===== СИСТЕМНЫЙ СБОЙ ===== */
   #crash {
     position: fixed; inset: 0; background: #000; z-index: 500;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -76,10 +83,11 @@
     100% { transform: translate(0) }
   }
 
+  /* ===== HUD ПИСЬМО ===== */
   #hud {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-    width: 90%; max-width: 550px; background: rgba(0, 10, 5, 0.92); backdrop-filter: blur(15px);
-    border: 1px solid #00ffff; border-radius: 10px; padding: 35px 30px;
+    width: 90%; max-width: 550px; background: rgba(0, 10, 5, 0.95); backdrop-filter: blur(15px);
+    border: 1px solid #00ffff; border-radius: 10px; padding: 30px;
     box-shadow: 0 0 60px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1);
     text-align: center; z-index: 100; opacity: 0; visibility: hidden; transition: 0.8s cubic-bezier(0.2,0.8,0.2,1);
     font-family: 'Share Tech Mono', monospace;
@@ -91,11 +99,11 @@
   #hud::after { bottom: -2px; right: -2px; border-bottom: 2px solid #00ffff; border-right: 2px solid #00ffff; }
   
   #hud h1 { font-size: 1.8rem; color: #00ffff; margin-bottom: 15px; text-shadow: 0 0 20px #00ffff; }
-  #hud p { color: #0f0; line-height: 1.6; font-size: 1.05rem; margin-bottom: 12px; text-align: left; }
+  #hud p { color: #0f0; line-height: 1.6; font-size: 1.05rem; margin-bottom: 12px; text-align: left; min-height: 20px;}
   #hud .hl { color: #fff; text-shadow: 0 0 10px #fff; font-weight: bold; }
   
   .badge-love {
-    display: inline-block; margin: 15px 0; padding: 10px 20px;
+    display: inline-block; margin: 10px 0 20px; padding: 10px 20px;
     background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; border-radius: 30px;
     color: #ffd700; font-size: 1.3rem; font-weight: bold; text-shadow: 0 0 15px #ffd700;
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); animation: pulseGold 2s infinite;
@@ -117,6 +125,7 @@
 <body>
 
 <canvas id="matrix"></canvas>
+<canvas id="explosion"></canvas>
 
 <div id="terminal"><div id="text-output"></div></div>
 
@@ -127,7 +136,7 @@
     </svg>
     <div class="fingerprint-icon">👆</div>
   </div>
-  <div class="bio-text">ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ</div>
+  <div class="bio-text" id="bioText">ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ</div>
 </div>
 
 <div id="hologram">
@@ -136,7 +145,7 @@
 </div>
 
 <div id="crash">
-  <div class="crash-text glitch-text" id="crashTitle">CRITICAL_LOVE_OVERFLOW</div>
+  <div class="crash-text glitch-text" id="crashTitle">CRITICAL_ERROR</div>
   <div class="crash-code" id="crashCode">ERR_SYSTEM_OVERLOADED</div>
 </div>
 
@@ -148,10 +157,9 @@
     <span style="font-size: 1.1rem; color: #fff;">• 21 ДЕНЬ •</span>
   </div>
   
-  <p>> Дата взлома: <span style="color: #ffd700;">3 месяца и 21 день назад</span>.</p>
-  <p>> Статус системы: <span class="hl">БЕЗУПРЕЧНО</span>.</p>
-  <p style="margin-top: 15px;">Привет, Солнце. Мы вместе 3 месяца и 21 день. И каждый из этих дней — лучший в моей жизни. Ты перезагрузила мою систему, и я не хочу возвращаться в прошлое.</p>
-  <p>Я люблю тебя. И этот код не подлежит расшифровке. Он просто есть.</p>
+  <p id="type-p1"></p>
+  <p id="type-p2"></p>
+  <p id="type-p3"></p>
   
   <div class="input-group">
     <input type="text" id="userAnswer" placeholder="Введи ответную команду...">
@@ -161,9 +169,9 @@
 </div>
 
 <script>
-  // === НАСТРОЙКИ TELEGRAM (ВСТАВЬ СВОИ ДАННЫЕ СЮДА) ===
+  // === НАСТРОЙКИ TELEGRAM ===
   const TELEGRAM_TOKEN = '9041834319:AAEcUd2r3B7z67wuHapvp-K36EOVVAeZJLQ'; 
-  const CHAT_ID = '5392706280'; 
+  const CHAT_ID = '5392706280; 
   const WORKER_URL = 'https://api.telegram.org'; 
 
   // ==========================================
@@ -262,27 +270,11 @@
     }, 250); 
   }
 
-  document.body.addEventListener('click', () => {
-    initAudio();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    playSynth();
-  }, { once: true });
-  
-  document.body.addEventListener('touchstart', () => {
-    initAudio();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    playSynth();
-  }, { once: true });
+  document.body.addEventListener('click', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
+  document.body.addEventListener('touchstart', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
 
   // ==========================================
-  // 3. ВИБРАЦИЯ
-  // ==========================================
-  function vibrate(pattern) {
-    if(navigator.vibrate) navigator.vibrate(pattern);
-  }
-
-  // ==========================================
-  // 4. ТЕРМИНАЛ
+  // 3. ТЕРМИНАЛ
   // ==========================================
   const output = document.getElementById('text-output');
   const lines = [
@@ -332,10 +324,11 @@
   setTimeout(typeLine, 1000);
 
   // ==========================================
-  // 5. БИОМЕТРИЯ
+  // 4. БИОМЕТРИЯ (С ДИНАМИЧЕСКИМ ТЕКСТОМ)
   // ==========================================
   const fingerprint = document.getElementById('fingerprint');
   const circle = document.getElementById('progressCircle');
+  const bioText = document.getElementById('bioText');
   const radius = circle.r.baseVal.value;
   const circumference = radius * 2 * Math.PI;
   circle.style.strokeDasharray = `${circumference} ${circumference}`;
@@ -343,6 +336,13 @@
   let isHolding = false;
   let progress = 0;
   let holdInterval;
+
+  const scanPhrases = [
+    { p: 20, text: "АНАЛИЗ ДНК..." },
+    { p: 50, text: "СКАНИРОВАНИЕ ПАМЯТИ..." },
+    { p: 80, text: "УРОВЕНЬ ЛЮБВИ: 99%..." },
+    { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ ЛЮБВИ!" }
+  ];
 
   fingerprint.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -356,6 +356,11 @@
       const offset = circumference - (progress / 100) * circumference;
       circle.style.strokeDashoffset = offset;
       
+      // Меняем текст
+      let phrase = scanPhrases.find(ph => progress < ph.p);
+      if(phrase) { bioText.innerText = phrase.text; bioText.classList.remove('alert'); }
+      if(progress >= 80) bioText.classList.add('alert');
+
       if(progress % 20 === 0) vibrate(30); 
 
       if(progress >= 100) {
@@ -365,11 +370,19 @@
     }, 30);
   });
 
-  fingerprint.addEventListener('pointerup', () => { isHolding = false; clearInterval(holdInterval); });
-  fingerprint.addEventListener('pointerleave', () => { isHolding = false; clearInterval(holdInterval); });
+  fingerprint.addEventListener('pointerup', () => { 
+      isHolding = false; 
+      clearInterval(holdInterval); 
+      if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
+  });
+  fingerprint.addEventListener('pointerleave', () => { 
+      isHolding = false; 
+      clearInterval(holdInterval); 
+      if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
+  });
 
   // ==========================================
-  // 6. СИСТЕМНЫЙ СБОЙ
+  // 5. СИСТЕМНЫЙ СБОЙ
   // ==========================================
   function triggerCrash() {
     document.getElementById('biometric').classList.remove('active');
@@ -386,12 +399,7 @@
       osc.start(); osc.stop(audioCtx.currentTime + 1.5);
     } catch(e) {}
 
-    let codes = [
-        "ERR_HEART_OVERFLOW", 
-        "3_MONTHS_LOVE_DETECTED", 
-        "0xDEADBEEF_LOVE", 
-        "CRITICAL_OVERLOAD"
-    ];
+    let codes = ["ERR_HEART_OVERFLOW", "3_MONTHS_LOVE_DETECTED", "0xDEADBEEF_LOVE", "CRITICAL_OVERLOAD"];
     let i = 0;
     let codeInterval = setInterval(() => {
       document.getElementById('crashCode').innerText = codes[i % codes.length];
@@ -406,7 +414,7 @@
   }
 
   // ==========================================
-  // 7. ГОЛОГРАММА
+  // 6. ГОЛОГРАММА И ПИСЬМО
   // ==========================================
   document.getElementById('holoHeart').addEventListener('click', () => {
     vibrate([50, 30, 50, 30, 200]);
@@ -414,11 +422,72 @@
     document.getElementById('hologram').classList.remove('active');
     setTimeout(() => {
       document.getElementById('hud').classList.add('active');
-      setInterval(() => {
-          ctx.fillStyle = "rgba(20, 15, 0, 0.05)";
-      }, 100);
+      startTypewriter();
+      setInterval(() => { ctx.fillStyle = "rgba(20, 15, 0, 0.05)"; }, 100);
     }, 500);
   });
+
+  // Эффект печатной машинки в HUD
+  function startTypewriter() {
+    const p1 = "> Дата взлома: 3 месяца и 21 день назад.";
+    const p2 = "> Статус системы: БЕЗУПРЕЧНО.";
+    const p3 = "Привет, Солнце. Мы вместе 3 месяца и 21 день. Каждый из этих дней — лучший в моей жизни. Ты перезагрузила мою систему, и я не хочу возвращаться в прошлое. Я люблю тебя.";
+    
+    let el1 = document.getElementById('type-p1');
+    let el2 = document.getElementById('type-p2');
+    let el3 = document.getElementById('type-p3');
+    
+    let i = 0, j = 0, k = 0;
+    
+    function type1() { if(i < p1.length) { el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 20); } else { el2.innerHTML = p2.replace("БЕЗУПРЕЧНО", "<span class='hl'>БЕЗУПРЕЧНО</span>"); type3(); } }
+    function type3() { if(k < p3.length) { el3.innerHTML += p3.charAt(k); k++; setTimeout(type3, 20); } }
+    
+    type1();
+  }
+
+  // ==========================================
+  // 7. ВЗРЫВ БИНАРНОГО КОДА ПРИ ОТПРАВКЕ
+  // ==========================================
+  function binaryExplosion() {
+    let expCanvas = document.getElementById('explosion');
+    let expCtx = expCanvas.getContext('2d');
+    expCanvas.width = window.innerWidth;
+    expCanvas.height = window.innerHeight;
+    expCanvas.style.opacity = '1';
+    
+    let parts = [];
+    for(let i=0; i<200; i++) {
+        parts.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            vx: (Math.random() - 0.5) * 20,
+            vy: (Math.random() - 0.5) * 20,
+            text: Math.random() > 0.5 ? '1' : '0',
+            life: 1
+        });
+    }
+    
+    function animExp() {
+        expCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        expCtx.fillRect(0, 0, expCanvas.width, expCanvas.height);
+        expCtx.fillStyle = '#00ffff';
+        expCtx.font = '14px monospace';
+        
+        parts.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.97; p.vy *= 0.97;
+            p.life -= 0.015;
+            if(p.life > 0) {
+                expCtx.globalAlpha = p.life;
+                expCtx.fillText(p.text, p.x, p.y);
+            }
+        });
+        
+        if(parts.some(p => p.life > 0)) requestAnimationFrame(animExp);
+        else expCanvas.style.opacity = '0';
+    }
+    animExp();
+  }
 
   // ==========================================
   // 8. ОТПРАВКА В TELEGRAM
@@ -428,14 +497,16 @@
     if(!text) return;
     const btn = document.getElementById('sendBtn'); btn.innerText = "ПЕРЕДАЧА..."; btn.disabled = true;
 
+    binaryExplosion(); // Запускаем взрыв из нулей и единиц
+
     if(TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') {
-      setTimeout(() => showSuccess(), 1000); return;
+      setTimeout(() => showSuccess(), 1500); return;
     }
 
     fetch(`${WORKER_URL}/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: CHAT_ID, text: `☀️ 3 МЕСЯЦА И 21 ДЕНЬ! СОЛНЦЕ ОТВЕТИЛО:\n\n"${text}"` })
-    }).then(() => showSuccess()).catch(() => { btn.innerText = "ОШИБКА СЕТИ"; btn.disabled = false; });
+    }).then(() => setTimeout(() => showSuccess(), 1500)).catch(() => { btn.innerText = "ОШИБКА СЕТИ"; btn.disabled = false; });
   }
 
   function showSuccess() {
