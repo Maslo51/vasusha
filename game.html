@@ -19,10 +19,13 @@
     width: 90%; max-width: 700px; height: 55vh; 
     background: rgba(0, 10, 0, 0.85); border: 2px solid #0f0;
     border-radius: 10px; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
-    padding: 20px; font-size: 1.1rem; line-height: 1.5; color: #0f0; text-shadow: 0 0 5px #0f0;
-    z-index: 10; overflow: hidden; transition: opacity 0.5s;
+    padding: 20px; font-size: 1rem; line-height: 1.4; color: #0f0; text-shadow: 0 0 5px #0f0;
+    z-index: 10; overflow-y: auto; transition: opacity 0.5s;
   }
-  .cursor { display: inline-block; width: 10px; height: 18px; background: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom; }
+  #terminal::-webkit-scrollbar { width: 6px; }
+  #terminal::-webkit-scrollbar-thumb { background: #0f0; border-radius: 3px; }
+  
+  .cursor { display: inline-block; width: 10px; height: 15px; background: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom; }
   @keyframes blink { 50% { opacity: 0; } }
 
   /* ===== БИОМЕТРИЯ ===== */
@@ -99,7 +102,7 @@
   #hud::after { bottom: -2px; right: -2px; border-bottom: 2px solid #00ffff; border-right: 2px solid #00ffff; }
   
   #hud h1 { font-size: 1.8rem; color: #00ffff; margin-bottom: 15px; text-shadow: 0 0 20px #00ffff; }
-  #hud p { color: #0f0; line-height: 1.6; font-size: 1.05rem; margin-bottom: 12px; text-align: left; min-height: 20px;}
+  #hud p { color: #0f0; line-height: 1.6; font-size: 0.95rem; margin-bottom: 12px; text-align: left; min-height: 20px;}
   #hud .hl { color: #fff; text-shadow: 0 0 10px #fff; font-weight: bold; }
   
   .badge-love {
@@ -159,7 +162,7 @@
   
   <p id="type-p1"></p>
   <p id="type-p2"></p>
-  <p id="type-p3"></p>
+  <p id="type-p3" style="font-size: 0.85rem; line-height: 1.4;"></p>
   
   <div class="input-group">
     <input type="text" id="userAnswer" placeholder="Введи ответную команду...">
@@ -171,7 +174,7 @@
 <script>
   // === НАСТРОЙКИ TELEGRAM ===
   const TELEGRAM_TOKEN = '9041834319:AAEcUd2r3B7z67wuHapvp-K36EOVVAeZJLQ'; 
-  const CHAT_ID = '5392706280; 
+  const CHAT_ID = '5392706280'; 
   const WORKER_URL = 'https://api.telegram.org'; 
 
   // ==========================================
@@ -274,7 +277,7 @@
   document.body.addEventListener('touchstart', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
 
   // ==========================================
-  // 3. ТЕРМИНАЛ
+  // 3. ТЕРМИНАЛ (НАЧАЛЬНЫЙ ЭКРАН)
   // ==========================================
   const output = document.getElementById('text-output');
   const lines = [
@@ -304,7 +307,7 @@
           } catch(e) {}
         }
         charIndex++;
-        setTimeout(typeLine, 30);
+        setTimeout(typeLine, 40); // Скорость печати в терминале
       } else {
         output.innerHTML += "<br>> ";
         lineIndex++; charIndex = 0;
@@ -324,7 +327,7 @@
   setTimeout(typeLine, 1000);
 
   // ==========================================
-  // 4. БИОМЕТРИЯ (С ДИНАМИЧЕСКИМ ТЕКСТОМ)
+  // 4. БИОМЕТРИЯ
   // ==========================================
   const fingerprint = document.getElementById('fingerprint');
   const circle = document.getElementById('progressCircle');
@@ -341,13 +344,13 @@
     { p: 20, text: "АНАЛИЗ ДНК..." },
     { p: 50, text: "СКАНИРОВАНИЕ ПАМЯТИ..." },
     { p: 80, text: "УРОВЕНЬ ЛЮБВИ: 99%..." },
-    { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ ЛЮБВИ!" }
+    { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ!" }
   ];
 
   fingerprint.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     isHolding = true;
-    vibrate([100, 50, 100]); 
+    if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
     holdInterval = setInterval(() => {
       if(!isHolding) return;
       progress += 2;
@@ -356,12 +359,11 @@
       const offset = circumference - (progress / 100) * circumference;
       circle.style.strokeDashoffset = offset;
       
-      // Меняем текст
       let phrase = scanPhrases.find(ph => progress < ph.p);
       if(phrase) { bioText.innerText = phrase.text; bioText.classList.remove('alert'); }
       if(progress >= 80) bioText.classList.add('alert');
 
-      if(progress % 20 === 0) vibrate(30); 
+      if(progress % 20 === 0 && navigator.vibrate) navigator.vibrate(30); 
 
       if(progress >= 100) {
         clearInterval(holdInterval);
@@ -371,13 +373,11 @@
   });
 
   fingerprint.addEventListener('pointerup', () => { 
-      isHolding = false; 
-      clearInterval(holdInterval); 
+      isHolding = false; clearInterval(holdInterval); 
       if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
   });
   fingerprint.addEventListener('pointerleave', () => { 
-      isHolding = false; 
-      clearInterval(holdInterval); 
+      isHolding = false; clearInterval(holdInterval); 
       if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
   });
 
@@ -388,7 +388,7 @@
     document.getElementById('biometric').classList.remove('active');
     document.getElementById('crash').classList.add('active');
     
-    vibrate([500, 100, 500, 100, 1000]);
+    if(navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 1000]);
     
     try {
       let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
@@ -399,7 +399,7 @@
       osc.start(); osc.stop(audioCtx.currentTime + 1.5);
     } catch(e) {}
 
-    let codes = ["ERR_HEART_OVERFLOW", "3_MONTHS_LOVE_DETECTED", "0xDEADBEEF_LOVE", "CRITICAL_OVERLOAD"];
+    let codes = ["ERR_HEART_OVERFLOW", "5_YEARS_LOVE_DETECTED", "0xDEADBEEF_LOVE", "CRITICAL_OVERLOAD"];
     let i = 0;
     let codeInterval = setInterval(() => {
       document.getElementById('crashCode').innerText = codes[i % codes.length];
@@ -414,10 +414,10 @@
   }
 
   // ==========================================
-  // 6. ГОЛОГРАММА И ПИСЬМО
+  // 6. ГОЛОГРАММА И ЗАПУСК ПЕЧАТИ
   // ==========================================
   document.getElementById('holoHeart').addEventListener('click', () => {
-    vibrate([50, 30, 50, 30, 200]);
+    if(navigator.vibrate) navigator.vibrate([50, 30, 50, 30, 200]);
     
     document.getElementById('hologram').classList.remove('active');
     setTimeout(() => {
@@ -427,22 +427,35 @@
     }, 500);
   });
 
-  // Эффект печатной машинки в HUD
+  // ==========================================
+  // 7. ПЕЧАТЬ ЛОГА В ПИСЬМЕ (ХАРДКОР)
+  // ==========================================
   function startTypewriter() {
-    function startTypewriter() {
-    const p1 = "> Дата взлома: 3 месяца и 21 день назад.";
-    const p2 = "> Статус системы: БЕЗУПРЕЧНО.";
-    const p3 = "Привет, Солнце. Соединение установлено. Вывожу дамп системного лога LOVE.sys:<br><br>> [5 ЛЕТ НАЗАД] Первичный пинг. Обнаружен неизвестный IP. Сканирование портов выявило аномалию. Отправлен тестовый пакет данных. Ожидание ответа. Статус: STANDBY.<br><br>> [3 ГОДА НАЗАД] КРИТИЧЕСКИЙ СБОЙ. Брандмауэр взломан. Обнаружена zero-day уязвимость (Чувства). Проведена брутфорс-атака на ядро. Kernel panic. Перезапись файла heart.dll. Root-доступ получен без сопротивления. Статус: INFECTED.<br><br>> [3 МЕСЯЦА И 21 ДЕНЬ НАЗАД] Успешный SSH-хендшейк. Верификация ключей пройдена. Легаси-протоколы защиты безвозвратно удалены. Слияние баз данных. Тебе присвоены права Superuser. Статус: FULL CONTROL.<br><br>> [ТЕКУЩИЙ СТАТУС] Мониторинг Heartbeat 24/7. Превышение лимитов трафика. Постоянная DDoS-атака (Любовь). Выделен отдельный сервер в моем сознании. Откат (rollback) невозможен. Система зашифрована навсегда. Я тебя люблю.";
+    const p1 = "> DATE_OF_BREACH: 3_MONTHS_21_DAYS_AGO.";
+    const p2 = "> SYSTEM_STATUS: IMPECCABLE.";
+    const p3 = "CONNECTION_ESTABLISHED. DUMPING LOVE.sys LOG:<br><br>" +
+               "> [5_YEARS_AGO] INITIAL_PING. UNKNOWN_IP_DETECTED. PORT_SCAN_REVEALED_ANOMALY. TEST_PACKET_SENT. STATUS: STANDBY.<br><br>" +
+               "> [3_YEARS_AGO] CRITICAL_FAILURE. FIREWALL_BREACHED. ZERO-DAY_EXPLOIT_FOUND (FEELINGS). BRUTE-FORCE_ATTACK_ON_CORE. KERNEL_PANIC. REWRITING heart.dll. ROOT_ACCESS_GRANTED. STATUS: INFECTED.<br><br>" +
+               "> [3_MONTHS_21_DAYS_AGO] SSH_HANDSHAKE_SUCCESSFUL. LEGACY_PROTOCOLS_DELETED. DATABASE_MERGED. SUPERUSER_RIGHTS_ASSIGNED. STATUS: FULL_CONTROL.<br><br>" +
+               "> [CURRENT_STATUS] HEARTBEAT_MONITORING_24/7. DDoS_ATTACK (LOVE). DEDICATED_SERVER_ALLOCATED. ROLLBACK_IMPOSSIBLE. SYSTEM_ENCRYPTED_FOREVER. I_LOVE_YOU.";
     
     let el1 = document.getElementById('type-p1');
     let el2 = document.getElementById('type-p2');
     let el3 = document.getElementById('type-p3');
     
-    let i = 0, j = 0, k = 0;
+    let i = 0, k = 0;
     
-    function type1() { if(i < p1.length) { el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 15); } else { el2.innerHTML = p2.replace("БЕЗУПРЕЧНО", "<span class='hl'>БЕЗУПРЕЧНО</span>"); type3(); } }
+    // Печать первой строки
+    function type1() { 
+        if(i < p1.length) { 
+            el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 20); 
+        } else { 
+            el2.innerHTML = p2.replace("IMPECCABLE", "<span class='hl'>IMPECCABLE</span>"); 
+            type3(); 
+        } 
+    }
     
-    // Скорость печати лога (12 мс на символ). Если захочешь быстрее, поставь 5.
+    // Печать основного лога (быстро, чтобы не заставлять ждать)
     function type3() { 
         if(k < p3.length) { 
             if(p3.substring(k, k+4) === "<br>") {
@@ -450,14 +463,15 @@
             } else {
                 el3.innerHTML += p3.charAt(k); k++; 
             }
-            setTimeout(type3, 12); 
+            setTimeout(type3, 10); // 10 мс - очень быстро
         } 
     }
     
     type1();
   }
+
   // ==========================================
-  // 7. ВЗРЫВ БИНАРНОГО КОДА ПРИ ОТПРАВКЕ
+  // 8. ВЗРЫВ БИНАРНОГО КОДА ПРИ ОТПРАВКЕ
   // ==========================================
   function binaryExplosion() {
     let expCanvas = document.getElementById('explosion');
@@ -501,7 +515,7 @@
   }
 
   // ==========================================
-  // 8. ОТПРАВКА В TELEGRAM
+  // 9. ОТПРАВКА В TELEGRAM
   // ==========================================
   function sendMessage() {
     const text = document.getElementById('userAnswer').value.trim();
@@ -523,7 +537,7 @@
   function showSuccess() {
     document.querySelector('.input-group').style.display = 'none';
     document.getElementById('successMsg').style.display = 'block';
-    vibrate([100, 50, 100, 50, 100]);
+    if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
   }
 </script>
 </body>
