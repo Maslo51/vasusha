@@ -40,56 +40,27 @@
   }
 
   .presentation-container {
-    width: 100vw;
-    height: 100vh;
-    max-width: 1400px;
-    max-height: 900px;
-    position: relative;
-    overflow: hidden;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
+    width: 100vw; height: 100vh; max-width: 1400px; max-height: 900px;
+    position: relative; overflow: hidden;
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
     box-shadow: 0 30px 60px rgba(0,0,0,0.6);
   }
 
-  @media (min-width: 1024px) {
-    .presentation-container {
-      width: 95vw; height: 90vh;
-    }
-  }
+  @media (min-width: 1024px) { .presentation-container { width: 95vw; height: 90vh; } }
 
   .slide {
-    position: absolute;
-    inset: 0;
-    padding: 50px 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.98);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-    overflow-y: auto;
+    position: absolute; inset: 0; padding: 40px 60px; display: flex; flex-direction: column; justify-content: flex-start;
+    opacity: 0; visibility: hidden; transform: scale(0.98); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1; overflow-y: auto;
   }
-  
   .slide::-webkit-scrollbar { width: 6px; }
   .slide::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
-  
-  .slide.active {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-    z-index: 2;
-  }
+  .slide.active { opacity: 1; visibility: visible; transform: scale(1); z-index: 2; }
 
   .slide h2, .slide p, .slide ul, .img-box, .slide h1, .slide h3, .author-block, .logo-box {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-
   .slide.active h2 { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
   .slide.active p, .slide.active ul { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
   .slide.active .img-box, .slide.active .logo-box { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
@@ -97,148 +68,53 @@
   .slide.active h3 { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
   .slide.active .author-block { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
 
-  .slide h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    color: var(--gold);
-    margin-bottom: 30px;
-    line-height: 1.2;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-    padding-bottom: 15px;
-    display: inline-block;
-  }
-
-  .slide p, .slide li {
-    font-size: 1.15rem;
-    line-height: 1.7;
-    color: #cbd5e1;
-    margin-bottom: 15px;
-    text-align: justify;
-  }
-
+  .slide h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); margin-bottom: 25px; line-height: 1.2; border-bottom: 1px solid rgba(212, 175, 55, 0.2); padding-bottom: 15px; display: inline-block; }
+  .slide p, .slide li { font-size: 1.1rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 12px; text-align: justify; }
   .slide ul, .slide ol { margin-left: 25px; margin-bottom: 20px; }
   .slide li { margin-bottom: 8px; }
   .slide li::marker { color: var(--gold); font-weight: bold; }
 
-  .title-slide {
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  
-  .title-slide h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.1rem;
-    color: var(--gold);
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    margin-bottom: 40px;
-    font-weight: 600;
-  }
-  
-  .title-slide h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.2rem;
-    color: #fff;
-    margin-bottom: 30px;
-    line-height: 1.2;
-    max-width: 1000px;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-  }
-  
-  .author-block {
-    margin-top: 40px;
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--text-muted);
-  }
+  .title-slide { align-items: center; justify-content: center; text-align: center; }
+  .title-slide h3 { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; color: var(--gold); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 30px; font-weight: 600; }
+  .title-slide h1 { font-family: 'Playfair Display', serif; font-size: 3rem; color: #fff; margin-bottom: 30px; line-height: 1.2; max-width: 1000px; text-shadow: 0 0 30px rgba(255, 255, 255, 0.1); }
+  .author-block { margin-top: 40px; font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); }
   .author-block strong { color: #fff; }
 
   .img-box {
-    width: 100%;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-    color: var(--text-muted);
-    font-size: 1rem;
-    margin-top: 15px;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
-    transition: 0.3s;
-    overflow: hidden;
+    width: 100%; background: rgba(0,0,0,0.3); border: 2px dashed rgba(212,175,55,0.4); border-radius: 15px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    padding: 10px; color: var(--text-muted); font-size: 1rem; margin-top: 10px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5); transition: 0.3s; overflow: hidden;
+    height: 300px; /* Фиксированная высота для ровности */
   }
-  .img-box:hover { border-color: rgba(212, 175, 55, 0.5); }
+  .img-box:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
   
-  .img-box img {
-    max-width: 100%;
-    max-height: 350px;
-    object-fit: contain;
-    border-radius: 10px;
-    filter: sepia(0.3) contrast(1.1);
-    transition: filter 0.3s;
-  }
+  .img-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; filter: sepia(0.2) contrast(1.1); transition: filter 0.3s; }
   .img-box img:hover { filter: sepia(0) contrast(1); }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
 
-  .controls {
-    position: absolute; bottom: 30px; left: 70px; right: 70px;
-    display: flex; justify-content: space-between; align-items: center; z-index: 100;
-  }
-  
-  .btn {
-    background: transparent; border: 1px solid var(--gold); color: var(--gold);
-    padding: 12px 25px; border-radius: 30px; font-family: 'Montserrat', sans-serif;
-    font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(10px);
-  }
+  .controls { position: absolute; bottom: 30px; left: 60px; right: 60px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+  .btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 12px 25px; border-radius: 30px; font-family: 'Montserrat', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(10px); }
   .btn:hover:not(:disabled) { background: var(--gold); color: var(--bg); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
   .btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--text-muted); color: var(--text-muted); }
-  
   .counter { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--gold); letter-spacing: 2px; }
 
-  /* Стилизованный логотип */
-  .logo-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 15px;
-  }
-  .logo-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
-    color: var(--gold);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-  }
-  .logo-sub {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    letter-spacing: 8px;
-    margin-top: 10px;
-    text-transform: uppercase;
-  }
+  .logo-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 15px; height: 250px; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--gold); letter-spacing: 6px; text-transform: uppercase; text-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+  .logo-sub { font-size: 1rem; color: var(--text-muted); letter-spacing: 10px; margin-top: 10px; text-transform: uppercase; }
 
   @media (max-width: 768px) {
-    .slide { padding: 30px 20px 80px 20px; }
-    .slide h2 { font-size: 1.6rem; }
-    .slide p, .slide li { font-size: 1rem; text-align: left; }
-    .title-slide h1 { font-size: 1.8rem; }
-    .title-slide h3 { font-size: 0.9rem; margin-bottom: 20px; }
-    .controls { left: 20px; right: 20px; bottom: 20px; }
+    .slide { padding: 20px 15px 80px 15px; }
+    .slide h2 { font-size: 1.4rem; }
+    .slide p, .slide li { font-size: 0.95rem; text-align: left; }
+    .title-slide h1 { font-size: 1.6rem; }
+    .title-slide h3 { font-size: 0.8rem; margin-bottom: 20px; }
+    .controls { left: 15px; right: 15px; bottom: 15px; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 15px; }
-    .img-box img { max-height: 250px; }
+    .img-box { height: 250px; }
+    .logo-text { font-size: 2rem; }
   }
 </style>
 </head>
@@ -291,17 +167,17 @@
 
   <!-- СЛАЙД 6: РЕКОМЕНДАЦИИ -->
   <div class="slide">
-    <h2>Практические рекомендации для филологов и преподавателей</h2>
+    <h2>Практические рекомендации для филологов</h2>
     <p>Включение тем забытых авторов XVIII века обогащает литературный канон и формирует критическое мышление у студентов. Рекомендуется разработка методических пособий с биографией, анализом и практикой.</p>
     <p>Эффективно использовать сравнения с классиками, риторические упражнения и междисциплинарные проекты. Важно внедрять цифровые технологии и активизировать подготовку методистов для сохранения и продвижения литературного наследия.</p>
   </div>
 
   <!-- СЛАЙД 7: ЭТАПЫ -->
   <div class="slide">
-    <h2>Основные этапы развития методики преподавания литературы</h2>
+    <h2>Основные этапы развития методики</h2>
     <div class="img-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/History_of_Russian_literature_%281941%29%2C_page_421.jpg/800px-History_of_Russian_literature_%281941%29%2C_page_421.jpg" alt="Страница из учебника" onerror="this.style.display='none'">
-      <p style="margin-top: 15px; font-size: 0.9rem;">[Иллюстрация из учебника по истории литературы XVIII века]</p>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/History_of_Russian_literature_%281912%29.jpg/640px-History_of_Russian_literature_%281912%29.jpg" alt="Иллюстрация" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none;">[Фото: Иллюстрация из учебника]</span>
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Основные этапы развития методики преподавания литературы</p>
   </div>
@@ -310,64 +186,64 @@
   <div class="slide">
     <h2>Исторический контекст русской литературы XVIII века</h2>
     <p>XVIII век в России ознаменовался реформами Петра I, ростом просвещённого чиновничества и распространением идей Просвещения. Литература стала инструментом национального самосознания и социального диалога.</p>
-    <p>Развитие образования, типографии и периодики расширило аудиторию, а формирование русского литературного языка содействовало разнообразию жанров и стилевых направлений, отражающих культурные и политические изменения эпохи.</p>
+    <p>Развитие образования, типографии и периодики расширило аудиторию, а формирование русского литературного языка содействовало разнообразию жанров и стилевых направлений.</p>
   </div>
 
   <!-- СЛАЙД 9: СООБЩЕСТВА -->
   <div class="slide">
-    <h2>Литературные сообщества XVIII века: структура и функции</h2>
+    <h2>Литературные сообщества XVIII века</h2>
     <p>Литературные сообщества XVIII века были центрами обмена идеями и творческой поддержки, объединяя авторов для обсуждения языка и жанров. Их структура была неформальной, основываясь на интересах и связях.</p>
     <p>Примеры: Дружеское литературное общество и «Арзамас». Они способствовали обновлению языка, поддержке талантов и развитию литературных традиций, формируя мост к более организованным сообществам XIX века.</p>
   </div>
 
-  <!-- СЛАЙД 10: ПОРТРЕТЫ КЛЮЧЕВЫХ ФИГУР -->
+  <!-- СЛАЙД 10: ПОРТРЕТЫ КЛЮЧЕВЫХ -->
   <div class="slide">
     <h2>Портреты ключевых фигур</h2>
     <div class="grid-3">
-      <div class="img-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg/400px-M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg" alt="Ломоносов" onerror="this.style.display='none'">
-        <p style="margin-top:10px; font-size: 0.9rem;">М. В. Ломоносов</p>
+      <div class="img-box" style="height: 250px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg/640px-M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg" alt="Ломоносов" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="display:none;">[Фото: М.В. Ломоносов]</span>
       </div>
-      <div class="img-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Gavrila_Derzhavin_by_Borovikovsky.jpg/400px-Gavrila_Derzhavin_by_Borovikovsky.jpg" alt="Державин" onerror="this.style.display='none'">
-        <p style="margin-top:10px; font-size: 0.9rem;">Г. Р. Державин</p>
+      <div class="img-box" style="height: 250px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Gavrila_Derzhavin_by_Borovikovsky.jpg/640px-Gavrila_Derzhavin_by_Borovikovsky.jpg" alt="Державин" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="display:none;">[Фото: Г.Р. Державин]</span>
       </div>
-      <div class="img-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Vasily_Trediakovsky.jpg/400px-Vasily_Trediakovsky.jpg" alt="Тредиаковский" onerror="this.style.display='none'">
-        <p style="margin-top:10px; font-size: 0.9rem;">В. К. Тредиаковский</p>
+      <div class="img-box" style="height: 250px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Vasily_Trediakovsky.jpg/640px-Vasily_Trediakovsky.jpg" alt="Тредиаковский" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="display:none;">[Фото: В.К. Тредиаковский]</span>
       </div>
     </div>
-    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты ключевых фигур русской литературы XVIII века, отражающие участников литературных сообществ того времени</p>
+    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты ключевых фигур русской литературы XVIII века</p>
   </div>
 
   <!-- СЛАЙД 11: ЗАБЫТЫЕ ИМЕНА -->
   <div class="slide">
-    <h2>Забытые имена в истории русской литературы XVIII века</h2>
+    <h2>Забытые имена в истории литературы</h2>
     <p>Многие писатели XVIII века забыты из-за ограниченного распространения и смены литературных вкусов. Это осложняет понимание развития жанров и стилей эпохи.</p>
-    <p>Словарь русских писателей XVIII века (2010) расширил представление о малоизвестных авторах, таких как Алексей Маслов и Яков де Санглен. Их творчество и биографии раскрывают глубину и разнообразие литературной жизни, влияя на пересмотр историко-литературного контекста.</p>
+    <p>Словарь русских писателей XVIII века (2010) расширил представление о малоизвестных авторах, таких как Алексей Маслов и Яков де Санглен. Их творчество и биографии раскрывают глубину и разнообразие литературной жизни.</p>
   </div>
 
   <!-- СЛАЙД 12: ПОРТРЕТЫ ЗАБЫТЫХ -->
   <div class="slide">
     <h2>Портреты забытых писателей</h2>
     <div class="grid-2">
-      <div class="img-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Silhouette_of_a_man%2C_profile%2C_18th_century.jpg/300px-Silhouette_of_a_man%2C_profile%2C_18th_century.jpg" alt="Силуэт" onerror="this.style.display='none'">
-        <p style="margin-top:10px; font-size: 0.9rem;">Алексей Маслов (силуэт)</p>
+      <div class="img-box" style="height: 250px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Silhouette_of_a_man%2C_profile%2C_18th_century.jpg/640px-Silhouette_of_a_man%2C_profile%2C_18th_century.jpg" alt="Маслов" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="display:none;">[Фото: Алексей Маслов]</span>
       </div>
-      <div class="img-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Yakov_de_Sanglen.jpg/300px-Yakov_de_Sanglen.jpg" alt="де Санглен" onerror="this.style.display='none'">
-        <p style="margin-top:10px; font-size: 0.9rem;">Яков де Санглен</p>
+      <div class="img-box" style="height: 250px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Yakov_de_Sanglen.jpg/640px-Yakov_de_Sanglen.jpg" alt="де Санглен" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <span style="display:none;">[Фото: Яков де Санглен]</span>
       </div>
     </div>
-    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты забытых писателей и поэтов XVIII века, оказавших влияние на русскую литературу</p>
+    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты забытых писателей и поэтов XVIII века</p>
   </div>
 
   <!-- СЛАЙД 13: МЕТОДИКА -->
   <div class="slide">
-    <h2>Методика исследования забытых авторов XVIII века</h2>
+    <h2>Методика исследования забытых авторов</h2>
     <p>Метод основан на междисциплинарном подходе филологии, объединяющем языкознание, историю и культурологию. Важна архивная работа с рукописями и лингвистический анализ с помощью корпусных методов.</p>
-    <p>Используется сравнительный анализ стилей и изучение учебных материалов. Электронные ресурсы повышают качество и интерактивность исследований, обеспечивая комплексное понимание литературных сообществ XVIII века.</p>
+    <p>Используется сравнительный анализ стилей и изучение учебных материалов. Электронные ресурсы повышают качество и интерактивность исследований.</p>
   </div>
 
   <!-- СЛАЙД 14: МЕТОДЫ -->
@@ -383,8 +259,8 @@
           <li>Архивный поиск</li>
         </ul>
       </div>
-      <div class="img-box" style="height: 250px; margin-top: 0; padding: 10px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Text_analysis_diagram.svg/400px-Text_analysis_diagram.svg.png" alt="Схема методов" style="max-height: 200px;" onerror="this.style.display='none'">
+      <div class="img-box" style="height: 200px;">
+        <span>[Фото: Схема методов]</span>
       </div>
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 20px;">Методы исследования для комплексного изучения литературных явлений</p>
@@ -392,24 +268,25 @@
 
   <!-- СЛАЙД 15: ПУШКИНСКИЙ ДОМ -->
   <div class="slide">
-    <h2>Роль Пушкинского Дома в изучении литературы XVIII века</h2>
+    <h2>Роль Пушкинского Дома</h2>
     <p>В 1934 году в Пушкинском Доме создана группа по изучению русской литературы XVIII века, впервые системно объединяющая исследователей.</p>
-    <p>Под руководством Г. А. Гуковского сформирована современная научная школа с комплексным подходом к эпохе. Регулярные семинары, коллективные публикации и сотрудничество с другими институтами укрепляют позицию Пушкинского Дома как ведущего центра в этой области.</p>
+    <p>Под руководством Г. А. Гуковского сформирована современная научная школа с комплексным подходом к эпохе. Регулярные семинары и сотрудничество с другими институтами укрепляют позицию Пушкинского Дома как ведущего центра.</p>
   </div>
 
   <!-- СЛАЙД 16: ЗДАНИЕ -->
   <div class="slide">
     <h2>Здание Пушкинского Дома</h2>
     <div class="img-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg" alt="Пушкинский Дом" onerror="this.style.display='none'">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg/800px-%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg" alt="Пушкинский Дом" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none;">[Фото: Здание Пушкинского Дома]</span>
     </div>
-    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Здание Пушкинского Дома — центра исследований русской литературы XVIII века</p>
+    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Здание Пушкинского Дома — центра исследований литературы</p>
   </div>
 
   <!-- СЛАЙД 17: КУЛЬТУРНОЕ ЗНАЧЕНИЕ -->
   <div class="slide">
-    <h2>Культурное значение забытых писателей и литературных сообществ</h2>
-    <p>Забытые писатели и литературные сообщества XVIII века значимо влияли на развитие русской культуры, создавая многообразие жанров и стилей. Их клубы способствовали интеллектуальному обмену, адаптации европейских идей и формированию национального литературного вкуса.</p>
+    <h2>Культурное значение забытых писателей</h2>
+    <p>Забытые писатели и литературные сообщества XVIII века значимо влияли на развитие русской культуры, создавая многообразие жанров и стилей. Их клубы способствовали интеллектуальному обмену и формированию национального литературного вкуса.</p>
     <p>Эти сообщества играли важную роль в просвещении и становлении интеллигенции, прокладывая путь к золотому веку русской литературы.</p>
   </div>
 
@@ -417,16 +294,16 @@
   <div class="slide">
     <h2>Русская культура в XVIII веке</h2>
     <div class="img-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Императорский_Санкт-Петербургский_университет_%28XVIII_век%29.jpg/800px-Императорский_Санкт-Петербургский_университет_%28XVIII_век%29.jpg" alt="Культура XVIII века" onerror="this.style.display='none'">
+      <span>[Фото: Иллюстрация русской культуры XVIII века]</span>
     </div>
-    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Русская культура в XVIII веке — обзор культурного контекста и литературных процессов Российской империи XVIII столетия</p>
+    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Обзор культурного контекста Российской империи XVIII столетия</p>
   </div>
 
   <!-- СЛАЙД 19: СОВРЕМЕННЫЕ ПОДХОДЫ -->
   <div class="slide">
-    <h2>Современные подходы к восстановлению исторической памяти XVIII века</h2>
+    <h2>Современные подходы</h2>
     <p>Исследователи используют QR-коды, сторителлинг и игровые форматы для популяризации русской литературы XVIII века. Традиционные выставки стали интерактивными с яркими цитатами и мультимедийными программами.</p>
-    <p>Электронные базы и онлайн-архивы обеспечивают доступ и поддерживают международное сотрудничество. Цифровые технологии и образование расширяют аудиторию и укрепляют читательскую культуру.</p>
+    <p>Электронные базы и онлайн-архивы обеспечивают доступ и поддерживают международное сотрудничество. Цифровые технологии и образование расширяют аудиторию.</p>
   </div>
 
   <!-- СЛАЙД 20: ЛОГОТИП -->
@@ -436,21 +313,21 @@
       <div class="logo-text">НАСЛЕДИЕ</div>
       <div class="logo-sub">XVIII ВЕКА</div>
     </div>
-    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Современный логотип и символика, отражающие наследие русской литературы XVIII века</p>
+    <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Символика, отражающая наследие русской литературы XVIII века</p>
   </div>
 
   <!-- СЛАЙД 21: ЗАКЛЮЧЕНИЕ -->
   <div class="slide">
     <h2>Заключение</h2>
     <p>Исследование выявило важность забытых авторов и литературных сообществ XVIII века для развития русской литературы и культуры. Они разнообразили жанры, расширили темы и формировали традиции.</p>
-    <p>Литературные объединения служили центрами обмена идеями и связью с европейским просвещением. Методологический комплекс и роль Пушкинского Дома усиливают научный подход. Практические рекомендации открывают новые пути интеграции наследия в образование и культуру.</p>
+    <p>Литературные объединения служили центрами обмена идеями и связью с европейским просвещением. Практические рекомендации открывают новые пути интеграции наследия в образование.</p>
   </div>
 
   <!-- СЛАЙД 22: БИБЛИОГРАФИЯ -->
   <div class="slide">
     <h2>Библиография</h2>
     <p>Основные источники исследования включают электронные ресурсы, научные статьи и сборники, посвящённые забытым писателям и литературным обществам XVIII века.</p>
-    <p>Среди них: архивы 18vek.spb.ru, работы К.А. Жульковой, статьи и материалы из Пушкинского дома, а также онлайн-энциклопедии и специализированные порталы по русской литературе XVIII века.</p>
+    <p>Среди них: архивы 18vek.spb.ru, работы К.А. Жульковой, статьи и материалы из Пушкинского дома, а также онлайн-энциклопедии.</p>
   </div>
 
   <!-- Навигация -->
