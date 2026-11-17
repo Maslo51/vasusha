@@ -2,443 +2,376 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LOVE_PROTOCOL_3M_21D.exe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Исследование забытых имен XVIII века</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  :root {
+    --paper: #f4ecd8;
+    --ink: #2c1e16;
+    --ink-light: #5c4a3d;
+    --gold: #b8860b;
+    --accent: #8b0000;
+  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { height: 100vh; overflow: hidden; background: #000; color: #0f0; font-family: 'Share Tech Mono', monospace; perspective: 1000px; }
   
-  canvas#matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.4; }
-  canvas#explosion { position: fixed; inset: 0; z-index: 200; pointer-events: none; opacity: 0; }
-
-  /* ===== ТЕРМИНАЛ ===== */
-  #terminal {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 90%; max-width: 700px; height: 55vh; 
-    background: rgba(0, 10, 0, 0.85); border: 2px solid #0f0;
-    border-radius: 10px; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
-    padding: 20px; font-size: 1rem; line-height: 1.4; color: #0f0; text-shadow: 0 0 5px #0f0;
-    z-index: 10; overflow-y: auto; transition: opacity 0.5s;
-  }
-  #terminal::-webkit-scrollbar { width: 6px; }
-  #terminal::-webkit-scrollbar-thumb { background: #0f0; border-radius: 3px; }
-  
-  .cursor { display: inline-block; width: 10px; height: 15px; background: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom; }
-  @keyframes blink { 50% { opacity: 0; } }
-
-  /* ===== БИОМЕТРИЯ ===== */
-  #biometric {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    display: flex; flex-direction: column; align-items: center; gap: 20px;
-    opacity: 0; visibility: hidden; transition: 0.5s; z-index: 10;
-  }
-  #biometric.active { opacity: 1; visibility: visible; }
-  
-  .fingerprint-box {
-    width: 150px; height: 150px; border: 2px solid #0f0; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center; position: relative;
-    cursor: pointer; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); transition: 0.2s;
-  }
-  .fingerprint-box:active { transform: scale(0.95); box-shadow: 0 0 50px rgba(0, 255, 0, 0.6); }
-  .fingerprint-icon { font-size: 5rem; filter: drop-shadow(0 0 10px #0f0); }
-  
-  svg.progress-ring { position: absolute; top: 0; left: 0; width: 150px; height: 150px; transform: rotate(-90deg); pointer-events: none; }
-  .progress-ring__circle { stroke: #00ffff; stroke-width: 4; fill: transparent; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 0.1s linear; filter: drop-shadow(0 0 8px #00ffff); }
-  
-  .bio-text { color: #0f0; font-size: 1.1rem; text-align: center; text-shadow: 0 0 10px #0f0; height: 25px; }
-  .bio-text.alert { color: #ff0000; text-shadow: 0 0 10px #ff0000; font-weight: bold; animation: pulseRed 0.5s infinite; }
-  @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-  /* ===== ГОЛОГРАММА ===== */
-  #hologram {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    opacity: 0; visibility: hidden; transition: 1s; display: flex; flex-direction: column; align-items: center; z-index: 10;
-  }
-  #hologram.active { opacity: 1; visibility: visible; }
-  
-  .holo-heart {
-    font-size: 10rem; color: transparent; -webkit-text-stroke: 2px #00ffff;
-    filter: drop-shadow(0 0 20px #00ffff) drop-shadow(0 0 50px rgba(0, 255, 255, 0.6));
-    animation: floatHolo 3s ease-in-out infinite, spinHolo 8s linear infinite; cursor: pointer;
-    transition: 0.3s;
-  }
-  .holo-heart:hover { transform: scale(1.15); filter: drop-shadow(0 0 40px #00ffff) drop-shadow(0 0 80px #00ffff); }
-  @keyframes floatHolo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-  @keyframes spinHolo { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
-
-  /* ===== СИСТЕМНЫЙ СБОЙ ===== */
-  #crash {
-    position: fixed; inset: 0; background: #000; z-index: 500;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    opacity: 0; visibility: hidden; transition: 0.3s;
-  }
-  #crash.active { opacity: 1; visibility: visible; }
-  .crash-text { color: #ff0000; font-size: 2rem; font-weight: bold; text-shadow: 0 0 20px #ff0000; margin-bottom: 20px; text-align: center; padding: 0 20px; }
-  .crash-code { color: #ff4444; font-size: 0.9rem; opacity: 0.7; text-align: center; padding: 0 20px; }
-  .glitch-text { animation: glitchAnim 0.1s infinite; }
-  @keyframes glitchAnim {
-    0% { transform: translate(0) }
-    25% { transform: translate(-3px, 3px) }
-    50% { transform: translate(3px, -3px) }
-    75% { transform: translate(-3px, -3px) }
-    100% { transform: translate(0) }
+  body {
+    background-color: #1a110a;
+    /* Текстура дерева/кожи для фона */
+    background-image: url('https://www.transparenttextures.com/patterns/black-paper.png');
+    font-family: 'Lora', serif;
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
   }
 
-  /* ===== HUD ПИСЬМО ===== */
-  #hud {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-    width: 90%; max-width: 550px; background: rgba(0, 10, 5, 0.95); backdrop-filter: blur(15px);
-    border: 1px solid #00ffff; border-radius: 10px; padding: 30px;
-    box-shadow: 0 0 60px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1);
-    text-align: center; z-index: 100; opacity: 0; visibility: hidden; transition: 0.8s cubic-bezier(0.2,0.8,0.2,1);
-    font-family: 'Share Tech Mono', monospace;
-  }
-  #hud.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-  
-  #hud::before, #hud::after { content: ''; position: absolute; width: 20px; height: 20px; }
-  #hud::before { top: -2px; left: -2px; border-top: 2px solid #00ffff; border-left: 2px solid #00ffff; }
-  #hud::after { bottom: -2px; right: -2px; border-bottom: 2px solid #00ffff; border-right: 2px solid #00ffff; }
-  
-  #hud h1 { font-size: 1.8rem; color: #00ffff; margin-bottom: 15px; text-shadow: 0 0 20px #00ffff; }
-  #hud p { color: #0f0; line-height: 1.6; font-size: 0.95rem; margin-bottom: 12px; text-align: left; min-height: 20px;}
-  #hud .hl { color: #fff; text-shadow: 0 0 10px #fff; font-weight: bold; }
-  
-  .badge-love {
-    display: inline-block; margin: 10px 0 20px; padding: 10px 20px;
-    background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; border-radius: 30px;
-    color: #ffd700; font-size: 1.3rem; font-weight: bold; text-shadow: 0 0 15px #ffd700;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); animation: pulseGold 2s infinite;
-    line-height: 1.4;
-  }
-  @keyframes pulseGold {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-    50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+  /* Контейнер книги */
+  .book-container {
+    width: 90vw;
+    max-width: 900px;
+    height: 85vh;
+    max-height: 800px;
+    background-color: var(--paper);
+    /* Текстура пергамента */
+    background-image: 
+      url('https://www.transparenttextures.com/patterns/cream-paper.png'),
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4) 0%, rgba(200,180,150,0.4) 100%);
+    box-shadow: 
+      inset 0 0 50px rgba(139, 69, 19, 0.2),
+      0 20px 50px rgba(0,0,0,0.8),
+      10px 10px 0 -5px #e8dcc4,
+      10px 10px 0 0 #c9b590;
+    border-radius: 5px;
+    border: 1px solid #d3be9b;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 50px;
+    transition: transform 0.3s;
   }
 
-  .input-group { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-  .input-group input { padding: 15px; border-radius: 5px; border: 1px solid rgba(0, 255, 0, 0.5); background: rgba(0, 0, 0, 0.5); color: #0f0; font-family: 'Share Tech Mono'; font-size: 1rem; outline: none; transition: 0.3s; }
-  .input-group input:focus { border-color: #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); }
-  .input-group button { padding: 15px; border-radius: 5px; border: none; background: #0f0; color: #000; font-weight: bold; font-family: 'Share Tech Mono'; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
-  .input-group button:hover { background: #00ffff; box-shadow: 0 0 20px #00ffff; }
-  .success-msg { display: none; color: #00ffff; margin-top: 15px; font-weight: bold; text-shadow: 0 0 10px #00ffff; }
+  /* Декоративные уголки */
+  .corner { position: absolute; width: 40px; height: 40px; border: 2px solid var(--gold); opacity: 0.6; }
+  .corner-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+  .corner-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+  .corner-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+  .corner-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+  /* Шапка */
+  .header { text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px; margin-bottom: 20px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--accent); letter-spacing: 1px; }
+  .header p { font-size: 0.9rem; color: var(--ink-light); font-style: italic; margin-top: 5px; }
+
+  /* Контент */
+  .content { flex-grow: 1; overflow-y: auto; padding-right: 15px; scroll-behavior: smooth; }
+  
+  /* Кастомный скроллбар */
+  .content::-webkit-scrollbar { width: 8px; }
+  .content::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+  .content::-webkit-scrollbar-thumb { background: #c9b590; border-radius: 4px; }
+  .content::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  /* Секции */
+  .section { margin-bottom: 30px; animation: fadeIn 0.8s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--accent); margin-bottom: 10px; border-left: 3px solid var(--gold); padding-left: 10px; }
+  .section p { font-size: 1rem; line-height: 1.7; text-align: justify; margin-bottom: 10px; color: var(--ink); }
+  
+  /* Списки */
+  .section ul { margin-left: 20px; margin-bottom: 15px; font-size: 1rem; line-height: 1.7; }
+  .section li { margin-bottom: 8px; }
+  .section li::marker { color: var(--gold); font-weight: bold; }
+
+  /* Выделение имен */
+  .name-highlight {
+    color: var(--accent);
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 1px dashed var(--accent);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .name-highlight:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* Блок с целями */
+  .goal-box {
+    background: rgba(184, 134, 11, 0.08);
+    border: 1px solid rgba(184, 134, 11, 0.3);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-style: italic;
+  }
+
+  /* Навигация внизу */
+  .nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(184, 134, 11, 0.4);
+    margin-top: 10px;
+  }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--ink);
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 3px;
+  }
+  .nav-btn:hover { background: var(--gold); color: #fff; box-shadow: 0 0 10px rgba(184,134,11,0.4); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  
+  .page-indicator { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--ink-light); }
+
+  /* Мобильная адаптация */
+  @media (max-width: 768px) {
+    .book-container { padding: 20px; height: 95vh; width: 95vw; }
+    .header h1 { font-size: 1.3rem; }
+    .section h2 { font-size: 1.2rem; }
+    .section p, .section ul { font-size: 0.95rem; }
+    .nav-btn { padding: 6px 12px; font-size: 0.9rem; }
+  }
 </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-<canvas id="explosion"></canvas>
+<div class="book-container">
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
 
-<div id="terminal"><div id="text-output"></div></div>
-
-<div id="biometric">
-  <div class="fingerprint-box" id="fingerprint">
-    <svg class="progress-ring" width="150" height="150">
-      <circle class="progress-ring__circle" id="progressCircle" r="70" cx="75" cy="75"></circle>
-    </svg>
-    <div class="fingerprint-icon">👆</div>
+  <div class="header">
+    <h1 id="page-title">Титульный лист</h1>
+    <p>Исследовательский проект • 9 класс</p>
   </div>
-  <div class="bio-text" id="bioText">ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ</div>
-</div>
 
-<div id="hologram">
-  <div class="holo-heart" id="holoHeart">❤</div>
-  <div class="bio-text" style="color: #00ffff;">НАЖМИ НА СЕРДЦЕ</div>
-</div>
-
-<div id="crash">
-  <div class="crash-text glitch-text" id="crashTitle">КРИТИЧЕСКАЯ ОШИБКА</div>
-  <div class="crash-code" id="crashCode">ERR_SYSTEM_OVERLOADED</div>
-</div>
-
-<div id="hud">
-  <h1>> LOVE.exe REBOOTED</h1>
-  
-  <div class="badge-love">
-    3 МЕСЯЦА ВМЕСТЕ<br>
-    <span style="font-size: 1.1rem; color: #fff;">• 21 ДЕНЬ •</span>
+  <div class="content" id="content-box">
+    <!-- Сюда JS будет вставлять текст -->
   </div>
-  
-  <p id="type-p1"></p>
-  <p id="type-p2"></p>
-  <p id="type-p3" style="font-size: 0.85rem; line-height: 1.5;"></p>
-  
-  <div class="input-group">
-    <input type="text" id="userAnswer" placeholder="Введи ответную команду...">
-    <button onclick="sendMessage()" id="sendBtn">ОТПРАВИТЬ ПАКЕТ</button>
+
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="prevPage()">← Назад</button>
+    <span class="page-indicator" id="page-indicator">1 / 8</span>
+    <button class="nav-btn" id="nextBtn" onclick="nextPage()">Далее →</button>
   </div>
-  <div class="success-msg" id="successMsg">Пакет доставлен на сервер! 🚀</div>
 </div>
 
 <script>
-  // === НАСТРОЙКИ TELEGRAM ===
-  const TELEGRAM_TOKEN = '9041834319:AAEcUd2r3B7z67wuHapvp-K36EOVVAeZJLQ'; 
-  const CHAT_ID = '5392706280'; 
-  const WORKER_URL = 'https://api.telegram.org'; 
+  // ТВОЙ ТЕКСТ, РАЗБИТЫЙ НА СТРАНИЦЫ
+  const pages = [
+    {
+      title: "Титульный лист",
+      html: `
+        <div class="section" style="text-align: center; margin-top: 40px;">
+          <p style="font-size: 1.2rem; margin-bottom: 20px;">Средняя общеобразовательная школа № 4</p>
+          <h2 style="border: none; font-size: 2rem; padding: 0;">ПРОЕКТ</h2>
+          <p style="font-size: 1.1rem; margin-bottom: 10px;">на тему</p>
+          <p style="font-size: 1.3rem; font-weight: bold; margin-bottom: 40px;">«Исследование забытых имен и литературных сообществ русской литературы XVIII века»</p>
+          
+          <div style="text-align: right; margin-top: 50px;">
+            <p><strong>Выполнила:</strong></p>
+            <p>ученица 9 «Б» класса</p>
+            <p>Сухова Василиса Никитична</p>
+            <br>
+            <p><strong>Руководитель:</strong></p>
+            <p>Величкова Елена Ивановна</p>
+          </div>
+          
+          <p style="margin-top: 80px;">Шелехов 2026 г.</p>
+        </div>
+      `
+    },
+    {
+      title: "Введение",
+      html: `
+        <div class="section">
+          <h2>Проблема</h2>
+          <p>Недостаточная изученность и популяризация забытых писателей XVIII века и малоизвестных литературных сообществ мешают полноте понимания исторического развития русской литературы.</p>
+          
+          <div class="goal-box">
+            <h2 style="border: none; padding: 0; font-size: 1.2rem; margin-bottom: 10px;">Цель</h2>
+            <p>Создать комплексное научно-исследовательское изложение о забытых писателях и литературных сообществах XVIII века, способствующее развитию филологической науки и расширению знаний об истории русской литературы.</p>
+          </div>
 
-  const canvas = document.getElementById('matrix');
-  const ctx = canvas.getContext('2d');
-  let W, H, columns, drops;
-  const chars = "3 МЕСЯЦА 21 ДЕНЬ ЛЮБОВЬ ВЗЛОМ СЕРДЦЕ 0123456789".split("");
-  const fontSize = 16;
-  let beatPulse = 1;
-
-  function resizeMatrix() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    columns = W / fontSize;
-    drops = [];
-    for (let x = 0; x < columns; x++) drops[x] = 1;
-  }
-  window.addEventListener('resize', resizeMatrix); resizeMatrix();
-
-  function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, W, H);
-    ctx.font = (fontSize * beatPulse) + "px monospace";
-    ctx.fillStyle = "#0f0";
-    ctx.shadowBlur = beatPulse > 1.1 ? 15 : 0;
-    ctx.shadowColor = "#0f0";
-    for (let i = 0; i < drops.length; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > H && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
+          <h2>Задачи</h2>
+          <ul>
+            <li>Изучить учебную литературу по истории русской литературы XVIII века;</li>
+            <li>Проанализировать архивные материалы Пушкинского Дома и других институтов;</li>
+            <li>Выявить и классифицировать забытые имена авторов;</li>
+            <li>Исследовать организацию и функции литературных сообществ того времени;</li>
+            <li>Составить научный обзор с новыми выводами;</li>
+            <li>Подготовить содержательный буклет для широкой аудитории.</li>
+          </ul>
+        </div>
+        <div class="section">
+          <h2>Введение</h2>
+          <p>Русская литература XVIII века хранит множество забытых авторов, чьи произведения почти не исследованы из-за исторических и источниковых ограничений. Изучение этих фигур расширяет понимание культуры эпохи и разнообразия жанров. Работа восполняет пробелы в истории, раскрывая малые сообщества и малоизвестных писателей, а также анализирует их вклад и связь с крупными литературными процессами.</p>
+        </div>
+      `
+    },
+    {
+      title: "Контекст эпохи",
+      html: `
+        <div class="section">
+          <h2>Исторический контекст русской литературы XVIII века</h2>
+          <p>XVIII век в России ознаменовался реформами Петра I, ростом просвещённого чиновничества и распространением идей Просвещения. Литература стала инструментом национального самосознания и социального диалога. Развитие образования, типографии и периодики расширило аудиторию, а формирование русского литературного языка содействовало разнообразию жанров и стилевых направлений, отражающих культурные и политические изменения эпохи.</p>
+        </div>
+        <div class="section">
+          <h2>Литературные сообщества XVIII века: структура и функции</h2>
+          <p>Литературные сообщества XVIII века были центрами обмена идеями и творческой поддержки, объединяя авторов для обсуждения языка и жанров. Их структура была неформальной, основываясь на интересах и связях. Примеры: Дружеское литературное общество и «Арзамас». Они способствовали обновлению языка, поддержке талантов и развитию литературных традиций, формируя мост к более организованным сообществам XIX века.</p>
+        </div>
+      `
+    },
+    {
+      title: "Забытые имена",
+      html: `
+        <div class="section">
+          <h2>Забытые имена в истории русской литературы XVIII века</h2>
+          <p>Многие писатели XVIII века забыты из-за ограниченного распространения и смены литературных вкусов. Это осложняет понимание развития жанров и стилей эпохи. Словарь русских писателей XVIII века (2010) расширил представление о малоизвестных авторах, таких как <span class="name-highlight" onclick="showName('Алексей Маслов', 'Русский писатель и переводчик XVIII века. Его творчество долгое время оставалось в тени, но современные исследования раскрывают его вклад в развитие литературного языка.')">Алексей Маслов</span> и <span class="name-highlight" onclick="showName('Яков де Санглен', 'Личность яркая и неоднозначная. Литератор, переводчик и государственный деятель, чьи работы отражают сложные культурные и политические процессы эпохи.')">Яков де Санглен</span>.</p>
+          <p>Их творчество и биографии раскрывают глубину и разнообразие литературной жизни, влияя на пересмотр историко-литературного контекста.</p>
+          <p style="font-style: italic; color: var(--ink-light); margin-top: 15px;">* Нажмите на имена, выделенные красным, чтобы узнать больше.</p>
+        </div>
+      `
+    },
+    {
+      title: "Методология",
+      html: `
+        <div class="section">
+          <h2>Методика исследования забытых авторов</h2>
+          <p>Метод основан на междисциплинарном подходе филологии, объединяющем языкознание, историю и культурологию. Важна архивная работа с рукописями и лингвистический анализ с помощью корпусных методов. Используется сравнительный анализ стилей и изучение учебных материалов. Электронные ресурсы повышают качество и интерактивность исследований, обеспечивая комплексное понимание литературных сообществ XVIII века.</p>
+        </div>
+        <div class="section">
+          <h2>Методы исследования</h2>
+          <p>Для комплексного изучения литературных явлений используются:</p>
+          <ul>
+            <li>Сравнительно-исторический метод;</li>
+            <li>Описательный метод;</li>
+            <li>Структурно-грамматический метод.</li>
+          </ul>
+        </div>
+      `
+    },
+    {
+      title: "Пушкинский Дом",
+      html: `
+        <div class="section">
+          <h2>Роль Пушкинского Дома</h2>
+          <p>В 1934 году в Пушкинском Доме создана группа по изучению русской литературы XVIII века, впервые системно объединяющая исследователей. Под руководством Г. А. Гуковского сформирована современная научная школа с комплексным подходом к эпохе. Регулярные семинары, коллективные публикации и сотрудничество с другими институтами укрепляют позицию Пушкинского Дома как ведущего центра в этой области.</p>
+        </div>
+        <div class="section">
+          <h2>Культурное значение</h2>
+          <p>Забытые писатели и литературные сообщества XVIII века значимо влияли на развитие русской культуры, создавая многообразие жанров и стилей. Их клубы способствовали интеллектуальному обмену, адаптации европейских идей и формированию национального литературного вкуса. Эти сообщества играли важную роль в просвещении и становлении интеллигенции, прокладывая путь к золотому веку русской литературы.</p>
+        </div>
+      `
+    },
+    {
+      title: "Современные подходы",
+      html: `
+        <div class="section">
+          <h2>Восстановление исторической памяти</h2>
+          <p>Исследователи используют QR-коды, сторителлинг и игровые форматы для популяризации русской литературы XVIII века. Традиционные выставки стали интерактивными с яркими цитатами и мультимедийными программами. Электронные базы и онлайн-архивы обеспечивают доступ и поддерживают международное сотрудничество. Цифровые технологии и образование расширяют аудиторию и укрепляют читательскую культуру.</p>
+        </div>
+        <div class="section">
+          <h2>Практические рекомендации</h2>
+          <p>Включение тем забытых авторов XVIII века обогащает литературный канон и формирует критическое мышление у студентов. Рекомендуется разработка методических пособий с биографией, анализом и практикой. Эффективно использовать сравнения с классиками, риторические упражнения и междисциплинарные проекты. Важно внедрять цифровые технологии и активизировать подготовку методистов для сохранения и продвижения литературного наследия.</p>
+        </div>
+      `
+    },
+    {
+      title: "Заключение",
+      html: `
+        <div class="section">
+          <h2>Заключение</h2>
+          <p>Исследование выявило важность забытых авторов и литературных сообществ XVIII века для развития русской литературы и культуры. Они разнообразили жанры, расширили темы и формировали традиции. Литературные объединения служили центрами обмена идеями и связью с европейским просвещением. Методологический комплекс и роль Пушкинского Дома усиливают научный подход. Практические рекомендации открывают новые пути интеграции наследия в образование и культуру.</p>
+        </div>
+        <div class="section">
+          <h2>Библиография</h2>
+          <p>Основные источники исследования включают электронные ресурсы, научные статьи и сборники, посвящённые забытым писателям и литературным обществам XVIII века. Среди них: архивы 18vek.spb.ru, работы К.А. Жульковой, статьи и материалы из Пушкинского дома, а также онлайн-энциклопедии и специализированные порталы по русской литературе XVIII века.</p>
+        </div>
+        <div style="text-align: center; margin-top: 40px;">
+          <h1 style="font-family: 'Playfair Display'; color: var(--accent); font-size: 2rem;">Спасибо за внимание!</h1>
+        </div>
+      `
     }
-    ctx.shadowBlur = 0;
-    requestAnimationFrame(drawMatrix);
-  }
-  drawMatrix();
-
-  let audioCtx;
-  let musicPlaying = false;
-
-  function initAudio() {
-    if(audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  function playSynth() {
-    if(!audioCtx || musicPlaying) return;
-    musicPlaying = true;
-    let bass = audioCtx.createOscillator();
-    let bassGain = audioCtx.createGain();
-    bass.type = 'sawtooth'; bass.frequency.value = 55; bassGain.gain.value = 0.05;
-    bass.connect(bassGain); bassGain.connect(audioCtx.destination); bass.start();
-    let lfo = audioCtx.createOscillator(); let lfoGain = audioCtx.createGain();
-    lfo.frequency.value = 2; lfoGain.gain.value = 30;
-    lfo.connect(lfoGain); lfoGain.connect(bass.frequency); lfo.start();
-    setInterval(() => {
-      let pulseAmount = Math.sin(audioCtx.currentTime * Math.PI * 2 * 2) * 0.5 + 0.5;
-      beatPulse = 1 + pulseAmount * 0.15;
-      bassGain.gain.value = 0.05 + pulseAmount * 0.05;
-    }, 50);
-    const notes = [220, 261.63, 329.63, 392, 440]; let step = 0;
-    setInterval(() => {
-      if(!audioCtx || audioCtx.state === 'suspended') return;
-      let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-      osc.type = 'triangle'; osc.frequency.value = notes[step % notes.length];
-      let now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.03, now + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 0.5); step++;
-    }, 250); 
-  }
-
-  document.body.addEventListener('click', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
-  document.body.addEventListener('touchstart', () => { initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume(); playSynth(); }, { once: true });
-
-  const output = document.getElementById('text-output');
-  const lines = [
-    "> ИНИЦИАЛИЗАЦИЯ ВЗЛОМА...",
-    "> ЦЕЛЬ ЗАХВАЧЕНА: 'SUN'",
-    "> ДОСТУП К АРХИВАМ...",
-    "> НАЙДЕНА ЗАПИСЬ: RELATIONSHIP.LOG",
-    "> ДАТА: 3 МЕСЯЦА 21 ДЕНЬ",
-    "> СТАТУС: УСПЕШНО. СЕРДЦЕ ЗАХВАЧЕНО.",
-    "> ТРЕБУЕТСЯ БИОМЕТРИЯ."
   ];
-  let lineIndex = 0, charIndex = 0;
 
-  function typeLine() {
-    if (lineIndex < lines.length) {
-      if (charIndex < lines[lineIndex].length) {
-        output.innerHTML += lines[lineIndex].charAt(charIndex);
-        if(lines[lineIndex].charAt(charIndex) !== ' ') {
-          try {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
-            osc.type = 'square'; osc.frequency.value = 800 + Math.random() * 400;
-            g.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.02);
-          } catch(e) {}
-        }
-        charIndex++; setTimeout(typeLine, 40);
-      } else {
-        output.innerHTML += "<br>> ";
-        lineIndex++; charIndex = 0; setTimeout(typeLine, 300);
-      }
-    } else {
-      output.innerHTML += `<span class="cursor"></span>`;
-      setTimeout(() => {
-        document.getElementById('terminal').style.opacity = '0';
-        setTimeout(() => {
-          document.getElementById('terminal').style.display = 'none';
-          document.getElementById('biometric').classList.add('active');
-        }, 500);
-      }, 1000);
-    }
-  }
-  setTimeout(typeLine, 1000);
+  let currentPage = 0;
+  const contentBox = document.getElementById('content-box');
+  const pageTitle = document.getElementById('page-title');
+  const pageIndicator = document.getElementById('page-indicator');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
 
-  const fingerprint = document.getElementById('fingerprint');
-  const circle = document.getElementById('progressCircle');
-  const bioText = document.getElementById('bioText');
-  const radius = circle.r.baseVal.value;
-  const circumference = radius * 2 * Math.PI;
-  circle.style.strokeDasharray = `${circumference} ${circumference}`;
-  let isHolding = false; let progress = 0; let holdInterval;
-
-  const scanPhrases = [
-    { p: 20, text: "АНАЛИЗ ДНК..." }, { p: 50, text: "СКАНИРОВАНИЕ ПАМЯТИ..." },
-    { p: 80, text: "УРОВЕНЬ ЛЮБВИ: 99%..." }, { p: 99, text: "ОШИБКА: ПРЕВЫШЕН ЛИМИТ!" }
-  ];
-
-  fingerprint.addEventListener('pointerdown', (e) => {
-    e.preventDefault(); isHolding = true;
-    if(navigator.vibrate) navigator.vibrate([100, 50, 100]); 
-    holdInterval = setInterval(() => {
-      if(!isHolding) return;
-      progress += 2; if(progress > 100) progress = 100;
-      circle.style.strokeDashoffset = circumference - (progress / 100) * circumference;
-      let phrase = scanPhrases.find(ph => progress < ph.p);
-      if(phrase) { bioText.innerText = phrase.text; bioText.classList.remove('alert'); }
-      if(progress >= 80) bioText.classList.add('alert');
-      if(progress % 20 === 0 && navigator.vibrate) navigator.vibrate(30); 
-      if(progress >= 100) { clearInterval(holdInterval); triggerCrash(); }
-    }, 30);
-  });
-
-  fingerprint.addEventListener('pointerup', () => { 
-      isHolding = false; clearInterval(holdInterval); 
-      if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
-  });
-  fingerprint.addEventListener('pointerleave', () => { 
-      isHolding = false; clearInterval(holdInterval); 
-      if(progress < 100) { progress = 0; circle.style.strokeDashoffset = circumference; bioText.innerText = "ПРИЛОЖИ ПАЛЕЦ И НЕ ОТПУСКАЙ"; bioText.classList.remove('alert'); }
-  });
-
-  function triggerCrash() {
-    document.getElementById('biometric').classList.remove('active');
-    document.getElementById('crash').classList.add('active');
-    if(navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 1000]);
-    try {
-      let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
-      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 1.5);
-      g.gain.value = 0.2; osc.connect(g); g.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 1.5);
-    } catch(e) {}
-    let codes = ["ERR_HEART_OVERFLOW", "LOVE_DETECTED", "0xDEADBEEF", "CRITICAL_OVERLOAD"];
-    let i = 0;
-    let codeInterval = setInterval(() => {
-      document.getElementById('crashCode').innerText = codes[i % codes.length];
-      i++;
-      if(i > 10) {
-        clearInterval(codeInterval);
-        document.getElementById('crash').classList.remove('active');
-        document.getElementById('hologram').classList.add('active');
-        setInterval(() => { if(audioCtx && audioCtx.state === 'running') beatPulse = 1; }, 500);
-      }
-    }, 200);
-  }
-
-  document.getElementById('holoHeart').addEventListener('click', () => {
-    if(navigator.vibrate) navigator.vibrate([50, 30, 50, 30, 200]);
-    document.getElementById('hologram').classList.remove('active');
-    setTimeout(() => {
-      document.getElementById('hud').classList.add('active');
-      startTypewriter();
-      setInterval(() => { ctx.fillStyle = "rgba(20, 15, 0, 0.05)"; }, 100);
-    }, 500);
-  });
-
-  // ==========================================
-  // РУССКИЙ ХАКЕРСКИЙ ТЕКСТ
-  // ==========================================
-  function startTypewriter() {
-    const p1 = "> ДАТА_ВЗЛОМА: 3_МЕСЯЦА_21_ДЕНЬ_НАЗАД.";
-    const p2 = "> СТАТУС_СИСТЕМЫ: БЕЗУПРЕЧНО.";
-    const p3 = "СОЕДИНЕНИЕ УСТАНОВЛЕНО. ВЫГРУЗКА ЛОГА LOVE.sys:<br><br>" +
-               "> [5_ЛЕТ_НАЗАД] ПЕРВИЧНЫЙ_ПИНГ. ОБНАРУЖЕН_НЕИЗВЕСТНЫЙ_IP. СКАНИРОВАНИЕ_ПОРТОВ_ВЫЯВИЛО_АНОМАЛИЮ. ОТПРАВЛЕН_ТЕСТОВЫЙ_ПАКЕТ. СТАТУС: ОЖИДАНИЕ.<br><br>" +
-               "> [3_ГОДА_НАЗАД] КРИТИЧЕСКИЙ_СБОЙ. БРАНДМАУЭР_ВЗЛОМАН. ОБНАРУЖЕНА_ZERO-DAY_УЯЗВИМОСТЬ (ЧУВСТВА). БРУТФОРС-АТАКА_НА_ЯДРО. KERNEL_PANIC. ПЕРЕЗАПИСЬ_ФАЙЛА heart.dll. ROOT-ДОСТУП_ПОЛУЧЕН. СТАТУС: ЗАРАЖЕН.<br><br>" +
-               "> [3_МЕСЯЦА_21_ДЕНЬ_НАЗАД] УСПЕШНЫЙ_SSH-ХЕНДШЕЙК. ВЕРИФИКАЦИЯ_КЛЮЧЕЙ_ПРОЙДЕНА. ЛЕГАСИ-ПРОТОКОЛЫ_УДАЛЕНЫ. СЛИЯНИЕ_БАЗ_ДАННЫХ. ПРАВА_SUPERUSER_ПРИСВОЕНЫ. СТАТУС: ПОЛНЫЙ_КОНТРОЛЬ.<br><br>" +
-               "> [ТЕКУЩИЙ_СТАТУС] МОНИТОРИНГ_HEARTBEAT_24/7. DDoS-АТАКА (ЛЮБОВЬ). ВЫДЕЛЕН_ОТДЕЛЬНЫЙ_СЕРВЕР. ОТКАТ_НЕВОЗМОЖЕН. СИСТЕМА_ЗАШИФРОВАНА_НАВСЕГДА. Я_ТЕБЯ_ЛЮБЛЮ.";
+  function renderPage() {
+    contentBox.innerHTML = pages[currentPage].html;
+    contentBox.scrollTop = 0; // Скролл вверх при смене страницы
+    pageTitle.innerText = pages[currentPage].title;
+    pageIndicator.innerText = `${currentPage + 1} / ${pages.length}`;
     
-    let el1 = document.getElementById('type-p1');
-    let el2 = document.getElementById('type-p2');
-    let el3 = document.getElementById('type-p3');
-    
-    let i = 0, k = 0;
-    
-    function type1() { 
-        if(i < p1.length) { el1.innerHTML += p1.charAt(i); i++; setTimeout(type1, 20); } 
-        else { el2.innerHTML = p2.replace("БЕЗУПРЕЧНО", "<span class='hl'>БЕЗУПРЕЧНО</span>"); type3(); } 
-    }
-    
-    function type3() { 
-        if(k < p3.length) { 
-            if(p3.substring(k, k+4) === "<br>") { el3.innerHTML += "<br>"; k += 4; } 
-            else { el3.innerHTML += p3.charAt(k); k++; }
-            setTimeout(type3, 10); 
-        } 
-    }
-    type1();
+    // Блокировка кнопок
+    prevBtn.disabled = currentPage === 0;
+    nextBtn.disabled = currentPage === pages.length - 1;
   }
 
-  function binaryExplosion() {
-    let expCanvas = document.getElementById('explosion');
-    let expCtx = expCanvas.getContext('2d');
-    expCanvas.width = window.innerWidth; expCanvas.height = window.innerHeight;
-    expCanvas.style.opacity = '1';
-    let parts = [];
-    for(let i=0; i<200; i++) {
-        parts.push({ x: window.innerWidth / 2, y: window.innerHeight / 2, vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20, text: Math.random() > 0.5 ? '1' : '0', life: 1 });
+  function nextPage() {
+    if (currentPage < pages.length - 1) {
+      currentPage++;
+      renderPage();
     }
-    function animExp() {
-        expCtx.fillStyle = 'rgba(0, 0, 0, 0.1)'; expCtx.fillRect(0, 0, expCanvas.width, expCanvas.height);
-        expCtx.fillStyle = '#00ffff'; expCtx.font = '14px monospace';
-        parts.forEach(p => {
-            p.x += p.vx; p.y += p.vy; p.vx *= 0.97; p.vy *= 0.97; p.life -= 0.015;
-            if(p.life > 0) { expCtx.globalAlpha = p.life; expCtx.fillText(p.text, p.x, p.y); }
-        });
-        if(parts.some(p => p.life > 0)) requestAnimationFrame(animExp); else expCanvas.style.opacity = '0';
-    }
-    animExp();
   }
 
-  function sendMessage() {
-    const text = document.getElementById('userAnswer').value.trim();
-    if(!text) return;
-    const btn = document.getElementById('sendBtn'); btn.innerText = "ПЕРЕДАЧА..."; btn.disabled = true;
-    binaryExplosion();
-    if(TELEGRAM_TOKEN === 'YOUR_BOT_TOKEN') { setTimeout(() => showSuccess(), 1500); return; }
-    fetch(`${WORKER_URL}/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: CHAT_ID, text: `☀️ 3 МЕСЯЦА И 21 ДЕНЬ! СОЛНЦЕ ОТВЕТИЛО:\n\n"${text}"` })
-    }).then(() => setTimeout(() => showSuccess(), 1500)).catch(() => { btn.innerText = "ОШИБКА СЕТИ"; btn.disabled = false; });
+  function prevPage() {
+    if (currentPage > 0) {
+      currentPage--;
+      renderPage();
+    }
   }
 
-  function showSuccess() {
-    document.querySelector('.input-group').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'block';
-    if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+  // Всплывающее окно для имен
+  function showName(title, text) {
+    // Создаем оверлей
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000;
+      display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      background: var(--paper); padding: 30px; border-radius: 5px; max-width: 400px; width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--gold);
+      transform: scale(0.9); transition: transform 0.3s; text-align: center;
+    `;
+    
+    modal.innerHTML = `
+      <h2 style="font-family: 'Playfair Display'; color: var(--accent); margin-bottom: 15px;">${title}</h2>
+      <p style="font-family: 'Lora'; font-size: 1rem; line-height: 1.6; color: var(--ink); margin-bottom: 20px;">${text}</p>
+      <button style="background: var(--gold); color: #fff; border: none; padding: 10px 20px; font-family: 'Playfair Display'; cursor: pointer; border-radius: 3px;" onclick="this.closest('div').parentElement.remove()">Закрыть</button>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Анимация появления
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      modal.style.transform = 'scale(1)';
+    });
   }
+
+  // Инициализация
+  renderPage();
 </script>
 </body>
 </html>
