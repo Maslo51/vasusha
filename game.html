@@ -81,16 +81,15 @@
   .author-block strong { color: #fff; }
 
   .img-box {
-    width: 100%; background: rgba(0,0,0,0.3); border: 2px dashed rgba(212,175,55,0.4); border-radius: 15px;
+    width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(212,175,55,0.2); border-radius: 15px;
     display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
     padding: 10px; color: var(--text-muted); font-size: 1rem; margin-top: 10px;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.5); transition: 0.3s; overflow: hidden;
-    height: 300px; /* Фиксированная высота для ровности */
+    height: 300px;
   }
-  .img-box:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+  .img-box:hover { border-color: var(--gold); }
   
-  .img-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; filter: sepia(0.2) contrast(1.1); transition: filter 0.3s; }
-  .img-box img:hover { filter: sepia(0) contrast(1); }
+  .img-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; filter: sepia(0.1) contrast(1.1); }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
@@ -110,7 +109,6 @@
     .slide h2 { font-size: 1.4rem; }
     .slide p, .slide li { font-size: 0.95rem; text-align: left; }
     .title-slide h1 { font-size: 1.6rem; }
-    .title-slide h3 { font-size: 0.8rem; margin-bottom: 20px; }
     .controls { left: 15px; right: 15px; bottom: 15px; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 15px; }
     .img-box { height: 250px; }
@@ -176,15 +174,14 @@
   <div class="slide">
     <h2>Основные этапы развития методики</h2>
     <div class="img-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/History_of_Russian_literature_%281912%29.jpg/640px-History_of_Russian_literature_%281912%29.jpg" alt="Иллюстрация" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-      <span style="display:none;">[Фото: Иллюстрация из учебника]</span>
+      <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/e/e0/History_of_Russian_literature_%281912%29.jpg/640px-History_of_Russian_literature_%281912%29.jpg" alt="Иллюстрация">
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Основные этапы развития методики преподавания литературы</p>
   </div>
 
   <!-- СЛАЙД 8: КОНТЕКСТ -->
   <div class="slide">
-    <h2>Исторический контекст русской литературы XVIII века</h2>
+    <h2>Исторический контекст литературы XVIII века</h2>
     <p>XVIII век в России ознаменовался реформами Петра I, ростом просвещённого чиновничества и распространением идей Просвещения. Литература стала инструментом национального самосознания и социального диалога.</p>
     <p>Развитие образования, типографии и периодики расширило аудиторию, а формирование русского литературного языка содействовало разнообразию жанров и стилевых направлений.</p>
   </div>
@@ -193,7 +190,7 @@
   <div class="slide">
     <h2>Литературные сообщества XVIII века</h2>
     <p>Литературные сообщества XVIII века были центрами обмена идеями и творческой поддержки, объединяя авторов для обсуждения языка и жанров. Их структура была неформальной, основываясь на интересах и связях.</p>
-    <p>Примеры: Дружеское литературное общество и «Арзамас». Они способствовали обновлению языка, поддержке талантов и развитию литературных традиций, формируя мост к более организованным сообществам XIX века.</p>
+    <p>Примеры: Дружеское литературное общество и «Арзамас». Они способствовали обновлению языка, поддержке талантов и развитию литературных традиций.</p>
   </div>
 
   <!-- СЛАЙД 10: ПОРТРЕТЫ КЛЮЧЕВЫХ -->
@@ -201,16 +198,13 @@
     <h2>Портреты ключевых фигур</h2>
     <div class="grid-3">
       <div class="img-box" style="height: 250px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg/640px-M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg" alt="Ломоносов" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span style="display:none;">[Фото: М.В. Ломоносов]</span>
+        <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/1/1c/M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg/640px-M.V._Lomonosov_by_L.Miropolskiy_%281787%2C_Russian_museum%29.jpg" alt="Ломоносов">
       </div>
       <div class="img-box" style="height: 250px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Gavrila_Derzhavin_by_Borovikovsky.jpg/640px-Gavrila_Derzhavin_by_Borovikovsky.jpg" alt="Державин" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span style="display:none;">[Фото: Г.Р. Державин]</span>
+        <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Gavrila_Derzhavin_by_Borovikovsky.jpg/640px-Gavrila_Derzhavin_by_Borovikovsky.jpg" alt="Державин">
       </div>
       <div class="img-box" style="height: 250px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Vasily_Trediakovsky.jpg/640px-Vasily_Trediakovsky.jpg" alt="Тредиаковский" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span style="display:none;">[Фото: В.К. Тредиаковский]</span>
+        <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Vasily_Trediakovsky.jpg/640px-Vasily_Trediakovsky.jpg" alt="Тредиаковский">
       </div>
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты ключевых фигур русской литературы XVIII века</p>
@@ -220,7 +214,7 @@
   <div class="slide">
     <h2>Забытые имена в истории литературы</h2>
     <p>Многие писатели XVIII века забыты из-за ограниченного распространения и смены литературных вкусов. Это осложняет понимание развития жанров и стилей эпохи.</p>
-    <p>Словарь русских писателей XVIII века (2010) расширил представление о малоизвестных авторах, таких как Алексей Маслов и Яков де Санглен. Их творчество и биографии раскрывают глубину и разнообразие литературной жизни.</p>
+    <p>Словарь русских писателей XVIII века (2010) расширил представление о малоизвестных авторах, таких как Алексей Маслов и Яков де Санглен. Их творчество раскрывает глубину и разнообразие литературной жизни.</p>
   </div>
 
   <!-- СЛАЙД 12: ПОРТРЕТЫ ЗАБЫТЫХ -->
@@ -228,12 +222,10 @@
     <h2>Портреты забытых писателей</h2>
     <div class="grid-2">
       <div class="img-box" style="height: 250px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Silhouette_of_a_man%2C_profile%2C_18th_century.jpg/640px-Silhouette_of_a_man%2C_profile%2C_18th_century.jpg" alt="Маслов" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span style="display:none;">[Фото: Алексей Маслов]</span>
+        <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Yakov_de_Sanglen.jpg/640px-Yakov_de_Sanglen.jpg" alt="де Санглен">
       </div>
       <div class="img-box" style="height: 250px;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Yakov_de_Sanglen.jpg/640px-Yakov_de_Sanglen.jpg" alt="де Санглен" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <span style="display:none;">[Фото: Яков де Санглен]</span>
+        <span style="color: var(--text-muted);">[Портрет Алексея Маслова не сохранился, но его труды изучаются до сих пор]</span>
       </div>
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Портреты забытых писателей и поэтов XVIII века</p>
@@ -249,20 +241,13 @@
   <!-- СЛАЙД 14: МЕТОДЫ -->
   <div class="slide">
     <h2>Методы исследования</h2>
-    <div class="grid-2">
-      <div>
-        <ul style="margin-top: 10px;">
-          <li>Сравнительно-исторический</li>
-          <li>Описательный</li>
-          <li>Структурно-грамматический</li>
-          <li>Лингвистический анализ</li>
-          <li>Архивный поиск</li>
-        </ul>
-      </div>
-      <div class="img-box" style="height: 200px;">
-        <span>[Фото: Схема методов]</span>
-      </div>
-    </div>
+    <ul>
+      <li>Сравнительно-исторический</li>
+      <li>Описательный</li>
+      <li>Структурно-грамматический</li>
+      <li>Лингвистический анализ</li>
+      <li>Архивный поиск</li>
+    </ul>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 20px;">Методы исследования для комплексного изучения литературных явлений</p>
   </div>
 
@@ -270,23 +255,22 @@
   <div class="slide">
     <h2>Роль Пушкинского Дома</h2>
     <p>В 1934 году в Пушкинском Доме создана группа по изучению русской литературы XVIII века, впервые системно объединяющая исследователей.</p>
-    <p>Под руководством Г. А. Гуковского сформирована современная научная школа с комплексным подходом к эпохе. Регулярные семинары и сотрудничество с другими институтами укрепляют позицию Пушкинского Дома как ведущего центра.</p>
+    <p>Под руководством Г. А. Гуковского сформирована современная научная школа с комплексным подходом к эпохе. Регулярные семинары и сотрудничество с институтами укрепляют позицию Пушкинского Дома.</p>
   </div>
 
   <!-- СЛАЙД 16: ЗДАНИЕ -->
   <div class="slide">
     <h2>Здание Пушкинского Дома</h2>
     <div class="img-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg/800px-%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg" alt="Пушкинский Дом" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-      <span style="display:none;">[Фото: Здание Пушкинского Дома]</span>
+      <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/f/fd/%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg/800px-%D0%9F%D1%83%D1%88%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%B8%D0%B9_%D0%B4%D0%BE%D0%BC.jpg" alt="Пушкинский Дом">
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Здание Пушкинского Дома — центра исследований литературы</p>
   </div>
 
   <!-- СЛАЙД 17: КУЛЬТУРНОЕ ЗНАЧЕНИЕ -->
   <div class="slide">
-    <h2>Культурное значение забытых писателей</h2>
-    <p>Забытые писатели и литературные сообщества XVIII века значимо влияли на развитие русской культуры, создавая многообразие жанров и стилей. Их клубы способствовали интеллектуальному обмену и формированию национального литературного вкуса.</p>
+    <h2>Культурное значение</h2>
+    <p>Забытые писатели и литературные сообщества XVIII века значимо влияли на развитие русской культуры, создавая многообразие жанров и стилей. Их клубы способствовали интеллектуальному обмену.</p>
     <p>Эти сообщества играли важную роль в просвещении и становлении интеллигенции, прокладывая путь к золотому веку русской литературы.</p>
   </div>
 
@@ -294,7 +278,7 @@
   <div class="slide">
     <h2>Русская культура в XVIII веке</h2>
     <div class="img-box">
-      <span>[Фото: Иллюстрация русской культуры XVIII века]</span>
+      <img src="https://wsrv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/2/2a/%D0%98%D0%BC%D0%BF%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80%D1%81%D0%BA%D0%B8%D0%B9_%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3%D1%81%D0%BA%D0%B8%D0%B9_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82_%28XVIII_%D0%B2%D0%B5%D0%BA%29.jpg/800px-%D0%98%D0%BC%D0%BF%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80%D1%81%D0%BA%D0%B8%D0%B9_%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3%D1%81%D0%BA%D0%B8%D0%B9_%D1%83%D0%BD%D0%B8%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%82%D0%B5%D1%82_%28XVIII_%D0%B2%D0%B5%D0%BA%29.jpg" alt="Культура">
     </div>
     <p style="font-size: 0.9rem; text-align: center; color: var(--text-muted); margin-top: 15px;">Обзор культурного контекста Российской империи XVIII столетия</p>
   </div>
@@ -302,8 +286,8 @@
   <!-- СЛАЙД 19: СОВРЕМЕННЫЕ ПОДХОДЫ -->
   <div class="slide">
     <h2>Современные подходы</h2>
-    <p>Исследователи используют QR-коды, сторителлинг и игровые форматы для популяризации русской литературы XVIII века. Традиционные выставки стали интерактивными с яркими цитатами и мультимедийными программами.</p>
-    <p>Электронные базы и онлайн-архивы обеспечивают доступ и поддерживают международное сотрудничество. Цифровые технологии и образование расширяют аудиторию.</p>
+    <p>Исследователи используют QR-коды, сторителлинг и игровые форматы для популяризации русской литературы XVIII века. Выставки стали интерактивными с яркими цитатами и мультимедийными программами.</p>
+    <p>Электронные базы и онлайн-архивы обеспечивают доступ и поддерживают международное сотрудничество.</p>
   </div>
 
   <!-- СЛАЙД 20: ЛОГОТИП -->
@@ -320,7 +304,7 @@
   <div class="slide">
     <h2>Заключение</h2>
     <p>Исследование выявило важность забытых авторов и литературных сообществ XVIII века для развития русской литературы и культуры. Они разнообразили жанры, расширили темы и формировали традиции.</p>
-    <p>Литературные объединения служили центрами обмена идеями и связью с европейским просвещением. Практические рекомендации открывают новые пути интеграции наследия в образование.</p>
+    <p>Литературные объединения служили центрами обмена идеями и связью с европейским просвещением.</p>
   </div>
 
   <!-- СЛАЙД 22: БИБЛИОГРАФИЯ -->
